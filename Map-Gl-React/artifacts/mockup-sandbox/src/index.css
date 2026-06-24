@@ -1,0 +1,179 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: dark;
+  --bg: #050609;
+  --panel: #0b0d12;
+  --panel2: #10131a;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #f5f7fb;
+  --muted: rgba(245, 247, 251, 0.58);
+  --muted2: rgba(245, 247, 251, 0.36);
+  --accent: #9fb8ff;
+  --gold: #d6b66a;
+  --green: #5ee0a1;
+  --red: #ff6b7a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top left, rgba(91, 128, 255, 0.22), transparent 34rem),
+    radial-gradient(circle at top right, rgba(214, 182, 106, 0.12), transparent 28rem), var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(22px);
+  }
+
+  .hairline {
+    border-color: var(--line);
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+
+  .muted2 {
+    color: var(--muted2);
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+
+  .gold {
+    color: var(--gold);
+  }
+
+  .grid-bg {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: 999px;
+    padding: 0.9rem 1.2rem;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 800;
+    transition: 0.25s;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: #f5f7fb;
+    color: #050609;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px rgba(245, 247, 251, 0.16);
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--line);
+    color: rgba(245, 247, 251, 0.72);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+  }
+
+  .metric {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .noise::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px 256px;
+    z-index: 9999;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+/* MapLibre popup: strip default chrome so our custom card shows cleanly */
+.maplibregl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.maplibregl-popup-tip {
+  display: none !important;
+}
+.maplibregl-popup-close-button {
+  display: none !important;
+}
+.maplibregl-ctrl-group {
+  background: rgba(5,6,9,0.82) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+.maplibregl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+  color: rgba(245,247,251,0.6) !important;
+}
+.maplibregl-ctrl-group button:hover {
+  background: rgba(255,255,255,0.06) !important;
+}
+.maplibregl-ctrl-group button span {
+  filter: invert(1) !important;
+  opacity: 0.6;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: rgba(245, 247, 251, 0.42);
+  font-size: 11px;
+}
+
+.recharts-default-tooltip {
+  background: #0c0f16 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
+}

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Astute"
+version = "1.0.0"
+id = "artifacts/astute"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24369
+
+[services.development]
+run = "pnpm --filter @workspace/astute run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/astute", "run", "build" ]
+publicDir = "artifacts/astute/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24369"
+BASE_PATH = "/"
