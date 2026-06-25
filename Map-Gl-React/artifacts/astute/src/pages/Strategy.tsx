@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { Target, TrendingUp, Shield, Clock, MapPin, Building2 } from 'lucide-react';
 import { PROPERTIES, totalUnits, portfolioValue, fmtCurrency } from '../lib/portfolioData';
 
@@ -47,6 +48,32 @@ const markets = [
 ];
 
 export default function Strategy() {
+  const [rentGrowth, setRentGrowth] = useState(4.2);
+  const [exitCap, setExitCap] = useState(6.2);
+  const [debtRate, setDebtRate] = useState(6.8);
+  const [holdPeriod, setHoldPeriod] = useState(5);
+
+  const underwriting = useMemo(() => {
+    const growthLift = (rentGrowth - 3.5) * 1.35;
+    const capDrag = (exitCap - 6.2) * 2.1;
+    const debtDrag = (debtRate - 6.8) * 1.2;
+    const holdLift = (holdPeriod - 5) * 0.45;
+    const midpoint = Math.max(8, Math.min(31, 18 + growthLift - capDrag - debtDrag + holdLift));
+    const low = Math.max(6, midpoint - 3.2);
+    const high = midpoint + 3.8;
+    const multiple = 1 + (midpoint / 100) * holdPeriod * 0.68;
+    const risk =
+      exitCap >= 7 || debtRate >= 8 ? 'Defensive' :
+      rentGrowth >= 5 && exitCap <= 6 ? 'Constructive' :
+      'Balanced';
+    return { low, high, multiple, risk };
+  }, [debtRate, exitCap, holdPeriod, rentGrowth]);
+
+  const sliderStyle = {
+    width: '100%',
+    accentColor: '#9fb8ff',
+  };
+
   return (
     <div style={{ padding: '48px 24px 80px' }}>
       <div className="section">
@@ -65,6 +92,80 @@ export default function Strategy() {
           <p style={{ margin: 0, maxWidth: 580, color: 'rgba(245,247,251,0.52)', fontSize: 16, lineHeight: 1.7 }}>
             Institutional-grade underwriting with a principal-driven focus on risk-adjusted returns in high-barrier Northeast markets.
           </p>
+        </div>
+
+        {/* Underwriting Simulator */}
+        <div className="glass" style={{ borderRadius: 26, padding: '28px 30px', marginBottom: 56, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 82% 10%, rgba(159,184,255,0.16), transparent 38%), radial-gradient(circle at 12% 86%, rgba(94,224,161,0.1), transparent 36%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 28, alignItems: 'stretch' }}>
+            <div>
+              <span style={{ color: '#9fb8ff', fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                Interactive Underwriting
+              </span>
+              <h2 style={{ margin: '8px 0 8px', fontSize: 24, fontWeight: 900, color: '#f5f7fb', letterSpacing: '-0.025em' }}>
+                Return Sensitivity Simulator
+              </h2>
+              <p style={{ margin: '0 0 22px', color: 'rgba(245,247,251,0.48)', fontSize: 13, lineHeight: 1.7, maxWidth: 620 }}>
+                Adjust the major value-add assumptions to see how the strategy posture changes. Outputs are directional estimates for education, not investment guarantees.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))', gap: 18 }}>
+                {[
+                  { label: 'Rent Growth', value: rentGrowth, suffix: '%', min: 0, max: 8, step: 0.1, set: setRentGrowth, color: '#5ee0a1' },
+                  { label: 'Exit Cap Rate', value: exitCap, suffix: '%', min: 4.5, max: 8.5, step: 0.1, set: setExitCap, color: '#d6b66a' },
+                  { label: 'Debt Rate', value: debtRate, suffix: '%', min: 4.5, max: 9.5, step: 0.1, set: setDebtRate, color: '#ff6b7a' },
+                  { label: 'Hold Period', value: holdPeriod, suffix: ' yrs', min: 3, max: 10, step: 1, set: setHoldPeriod, color: '#9fb8ff' },
+                ].map(({ label, value, suffix, min, max, step, set, color }) => (
+                  <label key={label} style={{
+                    display: 'block',
+                    borderRadius: 18,
+                    padding: '15px 16px',
+                    background: 'rgba(255,255,255,0.045)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}>
+                    <span style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <span style={{ color: 'rgba(245,247,251,0.42)', fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
+                      <span style={{ color, fontSize: 14, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{value.toFixed(step === 1 ? 0 : 1)}{suffix}</span>
+                    </span>
+                    <input
+                      type="range"
+                      min={min}
+                      max={max}
+                      step={step}
+                      value={value}
+                      onChange={e => set(Number(e.target.value))}
+                      style={sliderStyle}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div style={{
+              borderRadius: 22,
+              padding: 22,
+              background: 'rgba(5,6,9,0.42)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+            }}>
+              <p style={{ margin: '0 0 5px', color: 'rgba(245,247,251,0.36)', fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                Live Estimate
+              </p>
+              <p style={{ margin: '0 0 20px', color: '#5ee0a1', fontSize: 42, lineHeight: 1, fontWeight: 900, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>
+                {underwriting.low.toFixed(1)}-{underwriting.high.toFixed(1)}%
+              </p>
+              {[
+                { label: 'Risk Posture', value: underwriting.risk, color: underwriting.risk === 'Defensive' ? '#d6b66a' : underwriting.risk === 'Constructive' ? '#5ee0a1' : '#9fb8ff' },
+                { label: 'Equity Multiple', value: `${underwriting.multiple.toFixed(2)}x`, color: '#f5f7fb' },
+                { label: 'Portfolio Basis', value: fmtCurrency(portfolioValue), color: '#f5f7fb' },
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: '13px 0', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span style={{ color: 'rgba(245,247,251,0.4)', fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
+                  <span style={{ color, fontSize: 14, fontWeight: 900 }}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Pillars */}

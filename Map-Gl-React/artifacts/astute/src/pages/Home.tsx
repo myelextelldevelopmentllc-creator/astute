@@ -20,6 +20,14 @@ const FLY_TARGETS = [
   { center: [-73.6, 41.1] as [number, number], zoom: 7.6, pitch: 0, bearing: 0 },
 ];
 
+const LOCATION_INTELLIGENCE: Record<string, string[]> = {
+  'elliott-yonkers': ['Transit Access', 'School District', 'Rent Growth', 'Supply Constraint'],
+  'union-city-summit': ['Commuter Demand', 'Transit Access', 'Renovation Upside', 'Rent Growth'],
+  'arlington-somerville': ['Supply Constraint', 'School District', 'Commuter Demand', 'Rent Growth'],
+  'upland-somerville': ['Transit Access', 'Supply Constraint', 'Renovation Upside', 'School District'],
+  'elliott-92': ['School District', 'Rent Growth', 'Renovation Upside', 'Commuter Demand'],
+};
+
 export default function Home() {
   const mapRef = useRef<MapBackgroundHandle>(null);
   const [activeSection, setActiveSection] = useState(0);
@@ -293,6 +301,41 @@ export default function Home() {
                     <p style={{ margin: '0 0 18px', color: 'rgba(245,247,251,0.46)', fontSize: 12, lineHeight: 1.7 }}>
                       {activeProperty.thesis.slice(0, 112)}…
                     </p>
+
+                    <div style={{ marginBottom: 18 }}>
+                      <p style={{
+                        margin: '0 0 9px',
+                        color: 'rgba(245,247,251,0.38)',
+                        fontSize: 9,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        fontWeight: 800,
+                      }}>
+                        Location Intelligence
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                        {(LOCATION_INTELLIGENCE[activeProperty.id] ?? ['Transit Access', 'Rent Growth', 'Supply Constraint']).map((chip) => (
+                          <span
+                            key={chip}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              minHeight: 24,
+                              padding: '5px 10px',
+                              borderRadius: 999,
+                              background: 'linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035))',
+                              border: '1px solid rgba(255,255,255,0.09)',
+                              color: 'rgba(245,247,251,0.6)',
+                              fontSize: 10,
+                              fontWeight: 700,
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+                            }}
+                          >
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
                     <Link
                       to={`/portfolio/${activeProperty.id}`}

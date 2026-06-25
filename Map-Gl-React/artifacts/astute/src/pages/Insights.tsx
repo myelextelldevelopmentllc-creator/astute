@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { TrendingUp, MapPin, Zap, BarChart2 } from 'lucide-react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -58,6 +59,26 @@ const insights = [
 ];
 
 export default function Insights() {
+  const [activePulse, setActivePulse] = useState('Rent Growth');
+  const marketPulse = useMemo(() => {
+    const latest = marketTrends[marketTrends.length - 1];
+    const prior = marketTrends[marketTrends.length - 2];
+    const bestScore = [...PROPERTIES].sort((a, b) => b.score - a.score)[0];
+    return [
+      { label: 'Rent Growth', value: `+$${latest.rent - prior.rent}`, meta: 'Q/Q median rent', color: '#5ee0a1' },
+      { label: 'Vacancy', value: `${latest.vacancy}%`, meta: 'Tightening supply', color: '#9fb8ff' },
+      { label: 'Best Signal', value: bestScore.tag, meta: `${bestScore.score} portfolio score`, color: '#d6b66a' },
+      { label: 'Capital Flow', value: 'Selective', meta: 'Bridge credit reopening', color: '#ff6b7a' },
+    ];
+  }, []);
+  const filteredInsights = insights.filter(i =>
+    activePulse === 'All' ||
+    i.tag === activePulse ||
+    (activePulse === 'Best Signal' && i.tag === 'Market Intel') ||
+    (activePulse === 'Capital Flow' && i.tag === 'Capital Markets') ||
+    (activePulse === 'Vacancy' && i.tag === 'Valuation')
+  );
+
   return (
     <div style={{ padding: '48px 24px 80px' }}>
       <div className="section">
@@ -78,8 +99,86 @@ export default function Insights() {
           </p>
         </div>
 
+        {/* Market pulse */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14, marginBottom: 24 }}>
+          {marketPulse.map(({ label, value, meta, color }) => {
+            const active = activePulse === label;
+            return (
+              <button
+                key={label}
+                onClick={() => setActivePulse(active ? 'All' : label)}
+                className="glass"
+                style={{
+                  textAlign: 'left',
+                  borderRadius: 18,
+                  padding: '18px 20px',
+                  cursor: 'pointer',
+                  border: active ? `1px solid ${color}55` : '1px solid rgba(255,255,255,0.09)',
+                  background: active ? `linear-gradient(180deg, ${color}16, rgba(255,255,255,0.035))` : undefined,
+                  transition: 'transform 0.25s, border-color 0.25s, background 0.25s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
+                onMouseLeave={e => (e.currentTarget.style.transform = '')}
+              >
+                <span style={{ display: 'block', color: 'rgba(245,247,251,0.38)', fontSize: 10, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 8 }}>
+                  {label}
+                </span>
+                <span style={{ display: 'block', color, fontSize: 24, fontWeight: 900, letterSpacing: '-0.025em', marginBottom: 4 }}>
+                  {value}
+                </span>
+                <span style={{ color: 'rgba(245,247,251,0.46)', fontSize: 12, fontWeight: 600 }}>
+                  {meta}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 28 }}>
+          {['All', 'Rent Growth', 'Market Intel', 'Capital Markets', 'Valuation'].map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setActivePulse(tag)}
+              style={{
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 999,
+                padding: '8px 14px',
+                background: activePulse === tag ? 'rgba(94,224,161,0.14)' : 'rgba(255,255,255,0.045)',
+                color: activePulse === tag ? '#9ff0c4' : 'rgba(245,247,251,0.48)',
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+
         {/* Charts row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 40 }}>
+        <div className="glass" style={{ borderRadius: 24, padding: 18, marginBottom: 40 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', padding: '4px 6px 18px' }}>
+            <div>
+              <h2 style={{ margin: '0 0 4px', color: '#f5f7fb', fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em' }}>Market Dashboard</h2>
+              <p style={{ margin: 0, color: 'rgba(245,247,251,0.42)', fontSize: 12 }}>Active lens: {activePulse}</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['Base', 'Upside', 'Stress'].map((mode) => (
+                <span key={mode} style={{
+                  padding: '6px 10px',
+                  borderRadius: 999,
+                  background: mode === 'Base' ? 'rgba(159,184,255,0.15)' : 'rgba(255,255,255,0.045)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: mode === 'Base' ? '#c4d4ff' : 'rgba(245,247,251,0.38)',
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: '0.07em',
+                  textTransform: 'uppercase',
+                }}>{mode}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 20 }}>
           <div className="glass" style={{ borderRadius: 20, padding: '24px 24px 14px' }}>
             <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: '#f5f7fb' }}>Median Rent Trend</h3>
             <p style={{ margin: '0 0 20px', color: 'rgba(245,247,251,0.4)', fontSize: 12 }}>Northeast multifamily 2BR, $/mo</p>
@@ -122,6 +221,7 @@ export default function Insights() {
                 <Bar dataKey="cap" fill="#9fb8ff" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
           </div>
         </div>
 
@@ -173,7 +273,7 @@ export default function Insights() {
           Market Dispatches
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
-          {insights.map(({ icon: Icon, color, tag, title, body, date }) => (
+          {filteredInsights.map(({ icon: Icon, color, tag, title, body, date }) => (
             <div key={title} className="glass" style={{ borderRadius: 20, padding: '24px 26px', cursor: 'pointer', transition: 'transform 0.3s' }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = ''}
