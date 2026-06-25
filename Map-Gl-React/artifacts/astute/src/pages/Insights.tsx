@@ -23,6 +23,44 @@ const capRateData = [
   { market: 'NYC Suburbs', cap: 5.9 },
 ];
 
+const marketProfiles = {
+  Westchester: {
+    rentGrowth: '5.1%',
+    vacancy: '2.8%',
+    capRate: '6.2%',
+    supplyPressure: 'Low',
+    demandDriver: 'NYC commuter overflow',
+    signal: 84,
+    rentDelta: 0,
+    vacancyDelta: 0.1,
+    color: '#9fb8ff',
+  },
+  'Hudson County': {
+    rentGrowth: '4.8%',
+    vacancy: '3.1%',
+    capRate: '5.1%',
+    supplyPressure: 'Medium',
+    demandDriver: 'PATH / tunnel access',
+    signal: 91,
+    rentDelta: 70,
+    vacancyDelta: 0.2,
+    color: '#d6b66a',
+  },
+  'Boston Metro': {
+    rentGrowth: '4.4%',
+    vacancy: '2.5%',
+    capRate: '5.4%',
+    supplyPressure: 'Very low',
+    demandDriver: 'Education + biotech',
+    signal: 88,
+    rentDelta: 160,
+    vacancyDelta: -0.2,
+    color: '#5ee0a1',
+  },
+};
+
+type MarketProfileKey = keyof typeof marketProfiles;
+
 const insights = [
   {
     icon: TrendingUp,
@@ -60,21 +98,43 @@ const insights = [
 
 export default function Insights() {
   const [activePulse, setActivePulse] = useState('Rent Growth');
+  const [selectedMarket, setSelectedMarket] = useState<MarketProfileKey>('Westchester');
+  const profile = marketProfiles[selectedMarket];
   const marketPulse = useMemo(() => {
-    const latest = marketTrends[marketTrends.length - 1];
-    const prior = marketTrends[marketTrends.length - 2];
-    const bestScore = [...PROPERTIES].sort((a, b) => b.score - a.score)[0];
     return [
-      { label: 'Rent Growth', value: `+$${latest.rent - prior.rent}`, meta: 'Q/Q median rent', color: '#5ee0a1' },
-      { label: 'Vacancy', value: `${latest.vacancy}%`, meta: 'Tightening supply', color: '#9fb8ff' },
-      { label: 'Best Signal', value: bestScore.tag, meta: `${bestScore.score} portfolio score`, color: '#d6b66a' },
-      { label: 'Capital Flow', value: 'Selective', meta: 'Bridge credit reopening', color: '#ff6b7a' },
+      { label: 'Rent Growth', value: profile.rentGrowth, meta: 'YoY asking rent growth', color: '#5ee0a1' },
+      { label: 'Vacancy', value: profile.vacancy, meta: 'Current vacancy signal', color: '#9fb8ff' },
+      { label: 'Cap Rate', value: profile.capRate, meta: 'Going-in market range', color: '#d6b66a' },
+      { label: 'Supply Pressure', value: profile.supplyPressure, meta: 'New delivery pressure', color: '#ff6b7a' },
+      { label: 'Demand Driver', value: profile.demandDriver, meta: 'Primary renter catalyst', color: profile.color },
     ];
-  }, []);
+  }, [profile]);
+  const adjustedTrends = useMemo(() => (
+    marketTrends.map((point, index) => ({
+      ...point,
+      rent: point.rent + profile.rentDelta + index * Math.round(profile.signal / 22),
+      vacancy: Number(Math.max(1.8, point.vacancy + profile.vacancyDelta - index * 0.02).toFixed(1)),
+    }))
+  ), [profile]);
+  const adjustedCapRates = useMemo(() => (
+    capRateData.map((point) => ({
+      ...point,
+      cap: point.market.includes('Yonkers') && selectedMarket === 'Westchester'
+        ? 6.2
+        : point.market.includes('Somerville') && selectedMarket === 'Boston Metro'
+          ? 5.4
+          : point.market.includes('Union City') && selectedMarket === 'Hudson County'
+            ? 5.1
+            : point.cap,
+    }))
+  ), [selectedMarket]);
   const filteredInsights = insights.filter(i =>
     activePulse === 'All' ||
     i.tag === activePulse ||
     (activePulse === 'Best Signal' && i.tag === 'Market Intel') ||
+    (activePulse === 'Cap Rate' && i.tag === 'Valuation') ||
+    (activePulse === 'Supply Pressure' && i.tag === 'Valuation') ||
+    (activePulse === 'Demand Driver' && i.tag === 'Market Intel') ||
     (activePulse === 'Capital Flow' && i.tag === 'Capital Markets') ||
     (activePulse === 'Vacancy' && i.tag === 'Valuation')
   );
@@ -100,25 +160,101 @@ export default function Insights() {
         </div>
 
         {/* Market pulse */}
+        <div className="glass" style={{ borderRadius: 24, padding: 18, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+            <div>
+              <h2 style={{ margin: '0 0 3px', color: '#f5f7fb', fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em' }}>Market Pulse</h2>
+              <p style={{ margin: 0, color: 'rgba(245,247,251,0.42)', fontSize: 12 }}>Bloomberg-style live lens for active acquisition markets</p>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {(Object.keys(marketProfiles) as MarketProfileKey[]).map((market) => (
+                <button
+                  key={market}
+                  onClick={() => setSelectedMarket(market)}
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 999,
+                    padding: '8px 13px',
+                    background: selectedMarket === market ? `${marketProfiles[market].color}20` : 'rgba(255,255,255,0.045)',
+                    color: selectedMarket === market ? '#f5f7fb' : 'rgba(245,247,251,0.5)',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {market}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 16, alignItems: 'stretch' }}>
+            <div style={{
+              borderRadius: 18,
+              padding: 18,
+              background: 'rgba(5,6,9,0.38)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <p style={{ margin: '0 0 5px', color: 'rgba(245,247,251,0.38)', fontSize: 10, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase' }}>
+                Signal Strength
+              </p>
+              <p style={{ margin: '0 0 12px', color: profile.color, fontSize: 42, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em' }}>
+                {profile.signal}
+              </p>
+              <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                <div style={{ width: `${profile.signal}%`, height: '100%', borderRadius: 999, background: profile.color, boxShadow: `0 0 22px ${profile.color}66`, transition: 'width 0.45s ease' }} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
+              {marketPulse.map(({ label, value, meta, color }) => {
+                const active = activePulse === label;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => setActivePulse(active ? 'All' : label)}
+                    className="glass"
+                    style={{
+                      textAlign: 'left',
+                      borderRadius: 18,
+                      padding: '18px 20px',
+                      cursor: 'pointer',
+                      border: active ? `1px solid ${color}55` : '1px solid rgba(255,255,255,0.09)',
+                      background: active ? `linear-gradient(180deg, ${color}16, rgba(255,255,255,0.035))` : undefined,
+                      transition: 'transform 0.25s, border-color 0.25s, background 0.25s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
+                    onMouseLeave={e => (e.currentTarget.style.transform = '')}
+                  >
+                    <span style={{ display: 'block', color: 'rgba(245,247,251,0.38)', fontSize: 10, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 8 }}>
+                      {label}
+                    </span>
+                    <span style={{ display: 'block', color, fontSize: label === 'Demand Driver' ? 18 : 24, fontWeight: 900, letterSpacing: '-0.025em', marginBottom: 4 }}>
+                      {value}
+                    </span>
+                    <span style={{ color: 'rgba(245,247,251,0.46)', fontSize: 12, fontWeight: 600 }}>
+                      {meta}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Signal filters */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14, marginBottom: 24 }}>
-          {marketPulse.map(({ label, value, meta, color }) => {
+          {[{ label: 'Selected Market', value: selectedMarket, meta: profile.demandDriver, color: profile.color }, { label: 'Portfolio Exposure', value: String(PROPERTIES.filter(p => p.tag === selectedMarket).length), meta: 'Assets in this lens', color: '#9fb8ff' }, { label: 'Pulse Filter', value: activePulse, meta: 'Click below to refine dispatches', color: '#5ee0a1' }].map(({ label, value, meta, color }) => {
             const active = activePulse === label;
             return (
-              <button
+              <div
                 key={label}
-                onClick={() => setActivePulse(active ? 'All' : label)}
                 className="glass"
                 style={{
                   textAlign: 'left',
                   borderRadius: 18,
                   padding: '18px 20px',
-                  cursor: 'pointer',
                   border: active ? `1px solid ${color}55` : '1px solid rgba(255,255,255,0.09)',
                   background: active ? `linear-gradient(180deg, ${color}16, rgba(255,255,255,0.035))` : undefined,
-                  transition: 'transform 0.25s, border-color 0.25s, background 0.25s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
-                onMouseLeave={e => (e.currentTarget.style.transform = '')}
               >
                 <span style={{ display: 'block', color: 'rgba(245,247,251,0.38)', fontSize: 10, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 8 }}>
                   {label}
@@ -129,7 +265,7 @@ export default function Insights() {
                 <span style={{ color: 'rgba(245,247,251,0.46)', fontSize: 12, fontWeight: 600 }}>
                   {meta}
                 </span>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -160,7 +296,7 @@ export default function Insights() {
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', padding: '4px 6px 18px' }}>
             <div>
               <h2 style={{ margin: '0 0 4px', color: '#f5f7fb', fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em' }}>Market Dashboard</h2>
-              <p style={{ margin: 0, color: 'rgba(245,247,251,0.42)', fontSize: 12 }}>Active lens: {activePulse}</p>
+              <p style={{ margin: 0, color: 'rgba(245,247,251,0.42)', fontSize: 12 }}>Active lens: {selectedMarket} · {activePulse}</p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {['Base', 'Upside', 'Stress'].map((mode) => (
@@ -183,7 +319,7 @@ export default function Insights() {
             <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: '#f5f7fb' }}>Median Rent Trend</h3>
             <p style={{ margin: '0 0 20px', color: 'rgba(245,247,251,0.4)', fontSize: 12 }}>Northeast multifamily 2BR, $/mo</p>
             <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={marketTrends}>
+              <AreaChart data={adjustedTrends}>
                 <defs>
                   <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#5ee0a1" stopOpacity={0.25} />
@@ -208,7 +344,7 @@ export default function Insights() {
             <h3 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: '#f5f7fb' }}>Cap Rates by Market</h3>
             <p style={{ margin: '0 0 20px', color: 'rgba(245,247,251,0.4)', fontSize: 12 }}>Current going-in cap rate ranges</p>
             <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={capRateData} barCategoryGap="35%">
+              <BarChart data={adjustedCapRates} barCategoryGap="35%">
                 <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                 <XAxis dataKey="market" tick={{ fill: 'rgba(245,247,251,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={v => `${v}%`} tick={{ fill: 'rgba(245,247,251,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} domain={[3, 8]} />

@@ -52,22 +52,42 @@ export default function Strategy() {
   const [exitCap, setExitCap] = useState(6.2);
   const [debtRate, setDebtRate] = useState(6.8);
   const [holdPeriod, setHoldPeriod] = useState(5);
+  const [renovationBudget, setRenovationBudget] = useState(220000);
 
   const underwriting = useMemo(() => {
+    const currentNOI = PROPERTIES.reduce((sum, property) => sum + property.financials.currentNOI, 0);
+    const baseRenovation = PROPERTIES.reduce((sum, property) => sum + property.financials.renovationBudget, 0) / PROPERTIES.length;
     const growthLift = (rentGrowth - 3.5) * 1.35;
     const capDrag = (exitCap - 6.2) * 2.1;
     const debtDrag = (debtRate - 6.8) * 1.2;
     const holdLift = (holdPeriod - 5) * 0.45;
-    const midpoint = Math.max(8, Math.min(31, 18 + growthLift - capDrag - debtDrag + holdLift));
+    const renovationLift = ((renovationBudget - baseRenovation) / 100000) * 0.42;
+    const midpoint = Math.max(8, Math.min(31, 18 + growthLift - capDrag - debtDrag + holdLift + renovationLift));
     const low = Math.max(6, midpoint - 3.2);
     const high = midpoint + 3.8;
     const multiple = 1 + (midpoint / 100) * holdPeriod * 0.68;
+    const noiGrowth = Math.max(0.92, 1 + rentGrowth / 100 * holdPeriod + renovationBudget / 2600000);
+    const stabilizedNOI = currentNOI * noiGrowth;
+    const exitValue = stabilizedNOI / (exitCap / 100);
     const risk =
-      exitCap >= 7 || debtRate >= 8 ? 'Defensive' :
-      rentGrowth >= 5 && exitCap <= 6 ? 'Constructive' :
+      exitCap >= 7 || debtRate >= 8 || rentGrowth < 3 ? 'Defensive' :
+      rentGrowth >= 5 && exitCap <= 6 ? 'Aggressive' :
       'Balanced';
-    return { low, high, multiple, risk };
-  }, [debtRate, exitCap, holdPeriod, rentGrowth]);
+    return { low, high, multiple, risk, stabilizedNOI, exitValue };
+  }, [debtRate, exitCap, holdPeriod, renovationBudget, rentGrowth]);
+
+  const applyScenario = (scenario: 'Defensive' | 'Base Case' | 'Upside') => {
+    const settings = {
+      Defensive: { rentGrowth: 2.4, exitCap: 7.2, debtRate: 7.8, holdPeriod: 7, renovationBudget: 140000 },
+      'Base Case': { rentGrowth: 4.2, exitCap: 6.2, debtRate: 6.8, holdPeriod: 5, renovationBudget: 220000 },
+      Upside: { rentGrowth: 5.8, exitCap: 5.7, debtRate: 6.1, holdPeriod: 6, renovationBudget: 340000 },
+    }[scenario];
+    setRentGrowth(settings.rentGrowth);
+    setExitCap(settings.exitCap);
+    setDebtRate(settings.debtRate);
+    setHoldPeriod(settings.holdPeriod);
+    setRenovationBudget(settings.renovationBudget);
+  };
 
   const sliderStyle = {
     width: '100%',
@@ -109,12 +129,38 @@ export default function Strategy() {
                 Adjust the major value-add assumptions to see how the strategy posture changes. Outputs are directional estimates for education, not investment guarantees.
               </p>
 
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+                {(['Defensive', 'Base Case', 'Upside'] as const).map((scenario) => (
+                  <button
+                    key={scenario}
+                    onClick={() => applyScenario(scenario)}
+                    style={{
+                      border: '1px solid rgba(255,255,255,0.11)',
+                      borderRadius: 999,
+                      padding: '8px 13px',
+                      background: scenario === underwriting.risk || (scenario === 'Base Case' && underwriting.risk === 'Balanced')
+                        ? 'rgba(159,184,255,0.16)'
+                        : 'rgba(255,255,255,0.045)',
+                      color: scenario === underwriting.risk || (scenario === 'Base Case' && underwriting.risk === 'Balanced')
+                        ? '#c4d4ff'
+                        : 'rgba(245,247,251,0.52)',
+                      fontSize: 12,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {scenario}
+                  </button>
+                ))}
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 230px), 1fr))', gap: 18 }}>
                 {[
                   { label: 'Rent Growth', value: rentGrowth, suffix: '%', min: 0, max: 8, step: 0.1, set: setRentGrowth, color: '#5ee0a1' },
                   { label: 'Exit Cap Rate', value: exitCap, suffix: '%', min: 4.5, max: 8.5, step: 0.1, set: setExitCap, color: '#d6b66a' },
                   { label: 'Debt Rate', value: debtRate, suffix: '%', min: 4.5, max: 9.5, step: 0.1, set: setDebtRate, color: '#ff6b7a' },
                   { label: 'Hold Period', value: holdPeriod, suffix: ' yrs', min: 3, max: 10, step: 1, set: setHoldPeriod, color: '#9fb8ff' },
+                  { label: 'Renovation Budget', value: renovationBudget, suffix: '', min: 50000, max: 450000, step: 10000, set: setRenovationBudget, color: '#d6b66a', currency: true },
                 ].map(({ label, value, suffix, min, max, step, set, color }) => (
                   <label key={label} style={{
                     display: 'block',
@@ -122,10 +168,12 @@ export default function Strategy() {
                     padding: '15px 16px',
                     background: 'rgba(255,255,255,0.045)',
                     border: '1px solid rgba(255,255,255,0.08)',
-                  }}>
-                    <span style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <span style={{ color: 'rgba(245,247,251,0.42)', fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
-                      <span style={{ color, fontSize: 14, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{value.toFixed(step === 1 ? 0 : 1)}{suffix}</span>
+                    }}>
+                      <span style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                        <span style={{ color: 'rgba(245,247,251,0.42)', fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</span>
+                      <span style={{ color, fontSize: 14, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>
+                        {label === 'Renovation Budget' ? fmtCurrency(value) : value.toFixed(step === 1 ? 0 : 1)}{suffix}
+                      </span>
                     </span>
                     <input
                       type="range"
@@ -155,8 +203,10 @@ export default function Strategy() {
                 {underwriting.low.toFixed(1)}-{underwriting.high.toFixed(1)}%
               </p>
               {[
-                { label: 'Risk Posture', value: underwriting.risk, color: underwriting.risk === 'Defensive' ? '#d6b66a' : underwriting.risk === 'Constructive' ? '#5ee0a1' : '#9fb8ff' },
+                { label: 'Risk Posture', value: underwriting.risk, color: underwriting.risk === 'Defensive' ? '#d6b66a' : underwriting.risk === 'Aggressive' ? '#5ee0a1' : '#9fb8ff' },
                 { label: 'Equity Multiple', value: `${underwriting.multiple.toFixed(2)}x`, color: '#f5f7fb' },
+                { label: 'Stabilized NOI', value: fmtCurrency(underwriting.stabilizedNOI), color: '#5ee0a1' },
+                { label: 'Exit Value Estimate', value: fmtCurrency(underwriting.exitValue), color: '#d6b66a' },
                 { label: 'Portfolio Basis', value: fmtCurrency(portfolioValue), color: '#f5f7fb' },
               ].map(({ label, value, color }) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: '13px 0', borderTop: '1px solid rgba(255,255,255,0.07)' }}>

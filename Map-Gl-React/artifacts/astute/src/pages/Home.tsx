@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ChevronDown, TrendingUp, Building2, Layers, DollarSign } from 'lucide-react';
@@ -6,19 +6,152 @@ import { PROPERTIES, portfolioValue, totalUnits, fmtCurrency } from '../lib/port
 import ParticleField from '../components/home/ParticleField';
 import MapBackground from '../components/home/MapBackground';
 import type { MapBackgroundHandle } from '../components/home/MapBackground';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import type { CameraOptions, LandmarkName } from '../components/home/CinematicMapCanvas';
 
-const TOTAL_SECTIONS = 2 + PROPERTIES.length; // hero + 5 properties + outro
 const SCORE_COLOR = (s: number) => s >= 90 ? '#5ee0a1' : s >= 85 ? '#9fb8ff' : '#d6b66a';
 
-const FLY_TARGETS = [
-  { center: [-74.0, 40.85] as [number, number], zoom: 8.2, pitch: 0, bearing: 0 },
-  ...PROPERTIES.map((p, i) => ({
-    center: p.coords as [number, number],
-    zoom: 15.2, pitch: 42, bearing: -18 + i * 8,
-  })),
-  { center: [-73.6, 41.1] as [number, number], zoom: 7.6, pitch: 0, bearing: 0 },
+type Chapter =
+  | {
+      id: string;
+      type: 'hero' | 'landmark' | 'transition' | 'outro';
+      title: string;
+      subtitle: string;
+      landmarkName?: LandmarkName;
+      camera: CameraOptions;
+    }
+  | {
+      id: string;
+      type: 'property';
+      propertyId: string;
+      camera: CameraOptions;
+    };
+
+const CINEMATIC_CHAPTERS: Chapter[] = [
+  {
+    id: 'hero',
+    type: 'hero',
+    title: 'Tri-State Multifamily Intelligence',
+    subtitle: 'NY · NJ · MA',
+    camera: { center: [-73.62, 41.28], zoom: 6.65, pitch: 18, bearing: -9, duration: 2200 },
+  },
+  {
+    id: 'manhattan-orbit',
+    type: 'landmark',
+    title: 'New York Market Core',
+    subtitle: 'Capital, commuters, density, demand',
+    landmarkName: 'Manhattan',
+    camera: { center: [-73.9855, 40.758], zoom: 12.25, pitch: 54, bearing: -34, duration: 2900 },
+  },
+  {
+    id: 'gwb-flyby',
+    type: 'landmark',
+    title: 'Hudson Crossing',
+    subtitle: 'George Washington Bridge corridor',
+    landmarkName: 'George Washington Bridge',
+    camera: { center: [-73.9527, 40.8517], zoom: 13.35, pitch: 58, bearing: 42, duration: 2500 },
+  },
+  {
+    id: 'hudson-waterfront',
+    type: 'landmark',
+    title: 'Commuter Basin',
+    subtitle: 'Lincoln Tunnel · Jersey City · Newark Penn',
+    landmarkName: 'Jersey City Waterfront',
+    camera: { center: [-74.041, 40.742], zoom: 11.75, pitch: 50, bearing: -22, duration: 2400 },
+  },
+  {
+    id: 'yonkers-property',
+    type: 'property',
+    propertyId: 'elliott-yonkers',
+    camera: { center: [-73.8988, 40.9312], zoom: 15.45, pitch: 56, bearing: -28, duration: 2200 },
+  },
+  {
+    id: 'yonkers-station',
+    type: 'landmark',
+    title: 'Westchester Rail Node',
+    subtitle: 'Yonkers Station anchors northern commuter demand',
+    landmarkName: 'Yonkers Station',
+    camera: { center: [-73.8847, 40.9357], zoom: 14.15, pitch: 54, bearing: 24, duration: 2100 },
+  },
+  {
+    id: 'yonkers-property-2',
+    type: 'property',
+    propertyId: 'elliott-92',
+    camera: { center: [-73.8975, 40.932], zoom: 15.55, pitch: 58, bearing: 18, duration: 1900 },
+  },
+  {
+    id: 'union-city-property',
+    type: 'property',
+    propertyId: 'union-city-summit',
+    camera: { center: [-74.0263, 40.7695], zoom: 15.35, pitch: 57, bearing: -18, duration: 2200 },
+  },
+  {
+    id: 'leaving-nyc',
+    type: 'transition',
+    title: 'Leaving NYC',
+    subtitle: 'From Hudson density to Boston innovation markets',
+    camera: { center: [-73.15, 41.22], zoom: 7.05, pitch: 20, bearing: 34, duration: 3900 },
+  },
+  {
+    id: 'welcome-boston',
+    type: 'transition',
+    title: 'Welcome to Boston',
+    subtitle: 'Education, biotech, transit, and supply-constrained housing',
+    camera: { center: [-71.075, 42.36], zoom: 11.25, pitch: 48, bearing: -32, duration: 3400 },
+  },
+  {
+    id: 'boston-common',
+    type: 'landmark',
+    title: 'Boston Civic Core',
+    subtitle: 'Historic center, persistent renter demand',
+    landmarkName: 'Boston Common',
+    camera: { center: [-71.0656, 42.3555], zoom: 13.25, pitch: 55, bearing: 28, duration: 2300 },
+  },
+  {
+    id: 'harvard-mit-orbit',
+    type: 'landmark',
+    title: 'Cambridge Innovation Spine',
+    subtitle: 'Harvard · MIT · Kendall Square demand engine',
+    landmarkName: 'Harvard / MIT area',
+    camera: { center: [-71.097, 42.369], zoom: 13.65, pitch: 60, bearing: -48, duration: 2600 },
+  },
+  {
+    id: 'kendall-square',
+    type: 'landmark',
+    title: 'Kendall Square Signal',
+    subtitle: 'Biotech, AI, and lab-office employment density',
+    landmarkName: 'Kendall Square',
+    camera: { center: [-71.087, 42.3628], zoom: 14.25, pitch: 58, bearing: 34, duration: 2100 },
+  },
+  {
+    id: 'somerville-davis',
+    type: 'landmark',
+    title: 'Somerville Demand Pocket',
+    subtitle: 'Davis Square transit access and supply constraints',
+    landmarkName: 'Somerville Davis Square',
+    camera: { center: [-71.1223, 42.3967], zoom: 14.1, pitch: 55, bearing: -18, duration: 2100 },
+  },
+  {
+    id: 'somerville-property-1',
+    type: 'property',
+    propertyId: 'arlington-somerville',
+    camera: { center: [-71.1006, 42.3919], zoom: 15.55, pitch: 58, bearing: 28, duration: 2100 },
+  },
+  {
+    id: 'somerville-property-2',
+    type: 'property',
+    propertyId: 'upland-somerville',
+    camera: { center: [-71.1112, 42.3886], zoom: 15.55, pitch: 58, bearing: -24, duration: 2100 },
+  },
+  {
+    id: 'return-portfolio',
+    type: 'outro',
+    title: 'Portfolio Intelligence',
+    subtitle: 'A Northeast acquisition pipeline mapped by risk and upside',
+    camera: { center: [-72.62, 41.64], zoom: 6.9, pitch: 18, bearing: -10, duration: 3100 },
+  },
 ];
+
+const TOTAL_SECTIONS = CINEMATIC_CHAPTERS.length;
 
 const LOCATION_INTELLIGENCE: Record<string, string[]> = {
   'elliott-yonkers': ['Transit Access', 'School District', 'Rent Growth', 'Supply Constraint'],
@@ -32,6 +165,10 @@ export default function Home() {
   const mapRef = useRef<MapBackgroundHandle>(null);
   const [activeSection, setActiveSection] = useState(0);
   const lastSection = useRef(-1);
+  const propertyById = useMemo(
+    () => new Map(PROPERTIES.map((property) => [property.id, property])),
+    [],
+  );
 
   useEffect(() => {
     const onScroll = () => {
@@ -42,22 +179,29 @@ export default function Home() {
       if (idx !== lastSection.current) {
         lastSection.current = idx;
         setActiveSection(idx);
-        const target = FLY_TARGETS[idx];
-        if (target && mapRef.current) {
-          mapRef.current.flyTo({ ...target, duration: 2400 });
+        const chapter = CINEMATIC_CHAPTERS[idx];
+        if (chapter && mapRef.current) {
+          mapRef.current.flyTo(chapter.camera);
         }
       }
     };
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const activeChapter = CINEMATIC_CHAPTERS[activeSection] ?? CINEMATIC_CHAPTERS[0];
   const activeProperty =
-    activeSection >= 1 && activeSection <= PROPERTIES.length
-      ? PROPERTIES[activeSection - 1]
+    activeChapter.type === 'property'
+      ? propertyById.get(activeChapter.propertyId) ?? null
       : null;
-  const isHero = activeSection === 0;
-  const isOutro = activeSection > PROPERTIES.length;
+  const activeLandmarkName = activeChapter.type === 'landmark' ? activeChapter.landmarkName : undefined;
+  const isHero = activeChapter.type === 'hero';
+  const isOutro = activeChapter.type === 'outro';
+  const propertyChapters = CINEMATIC_CHAPTERS.filter((chapter): chapter is Extract<Chapter, { type: 'property' }> => chapter.type === 'property');
+  const activePropertyOrdinal = activeProperty
+    ? propertyChapters.findIndex((chapter) => chapter.propertyId === activeProperty.id) + 1
+    : 0;
 
   return (
     <div style={{ marginTop: -64, position: 'relative' }}>
@@ -70,6 +214,8 @@ export default function Home() {
             ref={mapRef}
             properties={PROPERTIES}
             activeSection={activeSection}
+            activePropertyId={activeProperty?.id}
+            activeLandmarkName={activeLandmarkName}
           />
 
           {/* CSS particle field (no WebGL) */}
@@ -200,6 +346,100 @@ export default function Home() {
             )}
           </AnimatePresence>
 
+          {/* ────────── CINEMATIC CHAPTER OVERLAYS ────────── */}
+          <AnimatePresence mode="wait">
+            {(activeChapter.type === 'landmark' || activeChapter.type === 'transition') && (
+              <motion.div
+                key={activeChapter.id}
+                initial={{ opacity: 0, y: activeChapter.type === 'transition' ? 22 : 12, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -12, filter: 'blur(8px)', transition: { duration: 0.32 } }}
+                transition={{ duration: 0.58, ease: [0.25, 0.46, 0.45, 0.94] }}
+                style={{
+                  position: 'absolute',
+                  zIndex: 28,
+                  pointerEvents: 'none',
+                  ...(activeChapter.type === 'transition'
+                    ? {
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center' as const,
+                      }
+                    : {
+                        left: 30,
+                        bottom: 84,
+                        width: 'min(420px, calc(100vw - 60px))',
+                      }),
+                }}
+              >
+                <div style={{
+                  padding: activeChapter.type === 'transition' ? '34px 44px' : '18px 22px',
+                  borderRadius: activeChapter.type === 'transition' ? 32 : 22,
+                  background: activeChapter.type === 'transition'
+                    ? 'rgba(4,5,9,0.44)'
+                    : 'rgba(4,5,9,0.58)',
+                  border: '1px solid rgba(255,255,255,0.13)',
+                  backdropFilter: 'blur(38px)',
+                  WebkitBackdropFilter: 'blur(38px)',
+                  boxShadow: '0 42px 130px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,255,255,0.08)',
+                }}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: activeChapter.type === 'transition' ? 16 : 10,
+                    padding: '5px 11px',
+                    borderRadius: 999,
+                    background: activeChapter.type === 'transition' ? 'rgba(159,184,255,0.12)' : 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}>
+                    <motion.span
+                      animate={{ opacity: [0.45, 1, 0.45] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: '50%',
+                        background: activeChapter.type === 'transition' ? '#9fb8ff' : '#5ee0a1',
+                        boxShadow: activeChapter.type === 'transition' ? '0 0 14px #9fb8ff' : '0 0 14px #5ee0a1',
+                      }}
+                    />
+                    <span style={{
+                      color: activeChapter.type === 'transition' ? '#c4d4ff' : 'rgba(245,247,251,0.55)',
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                    }}>
+                      {activeChapter.type === 'transition' ? 'Market Transfer' : 'Landmark Flyby'}
+                    </span>
+                  </div>
+                  <h2 style={{
+                    margin: '0 0 8px',
+                    color: '#f5f7fb',
+                    fontSize: activeChapter.type === 'transition' ? 'clamp(42px, 7vw, 86px)' : 28,
+                    lineHeight: activeChapter.type === 'transition' ? 0.96 : 1.05,
+                    fontWeight: 900,
+                    letterSpacing: activeChapter.type === 'transition' ? '-0.045em' : '-0.03em',
+                  }}>
+                    {activeChapter.title}
+                  </h2>
+                  <p style={{
+                    margin: 0,
+                    color: 'rgba(245,247,251,0.52)',
+                    fontSize: activeChapter.type === 'transition' ? 16 : 13,
+                    lineHeight: 1.65,
+                    maxWidth: 520,
+                  }}>
+                    {activeChapter.subtitle}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* ────────── PROPERTY GLASS CARD ────────── */}
           <AnimatePresence mode="wait">
             {activeProperty && (
@@ -262,7 +502,7 @@ export default function Home() {
 
                     {/* Counter */}
                     <div style={{ position: 'absolute', bottom: 13, left: 15, color: 'rgba(245,247,251,0.4)', fontSize: 11, fontWeight: 600 }}>
-                      {activeSection} of {PROPERTIES.length}
+                      {activePropertyOrdinal} of {propertyChapters.length}
                     </div>
                   </div>
 
@@ -357,18 +597,21 @@ export default function Home() {
 
                 {/* Progress pills */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: 14 }}>
-                  {PROPERTIES.map((_, i) => (
+                  {propertyChapters.map((chapter, i) => {
+                    const property = propertyById.get(chapter.propertyId);
+                    return (
                     <motion.div
-                      key={i}
-                      animate={{ width: i === activeSection - 1 ? 24 : 7 }}
+                      key={chapter.id}
+                      animate={{ width: property?.id === activeProperty?.id ? 24 : 7 }}
                       style={{
                         height: 7, borderRadius: 999,
-                        background: i === activeSection - 1
-                          ? SCORE_COLOR(PROPERTIES[i].score)
+                        background: property?.id === activeProperty?.id
+                          ? SCORE_COLOR(property.score)
                           : 'rgba(255,255,255,0.18)',
                       }}
                     />
-                  ))}
+                    );
+                  })}
                 </div>
               </motion.div>
             )}
@@ -387,15 +630,25 @@ export default function Home() {
                   display: 'flex', flexDirection: 'column', gap: 14, zIndex: 25,
                 }}
               >
-                {PROPERTIES.map((p, i) => {
-                  const isActive = i === activeSection - 1;
+                {CINEMATIC_CHAPTERS.slice(1, -1).map((chapter, i) => {
+                  const chapterIndex = i + 1;
+                  const isActive = chapterIndex === activeSection;
+                  const chapterProperty = chapter.type === 'property' ? propertyById.get(chapter.propertyId) : null;
+                  const color = chapter.type === 'transition'
+                    ? '#9fb8ff'
+                    : chapter.type === 'landmark'
+                      ? '#d6b66a'
+                      : SCORE_COLOR(chapterProperty?.score ?? 86);
+                  const label = chapter.type === 'property'
+                    ? chapterProperty?.location ?? 'Property'
+                    : chapter.title;
                   return (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div key={chapter.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <motion.div
                         animate={{ width: isActive ? 28 : 8 }}
                         style={{
                           height: 7, borderRadius: 999, flexShrink: 0,
-                          background: isActive ? SCORE_COLOR(p.score) : 'rgba(255,255,255,0.2)',
+                          background: isActive ? color : 'rgba(255,255,255,0.2)',
                         }}
                       />
                       <AnimatePresence>
@@ -406,7 +659,7 @@ export default function Home() {
                             exit={{ opacity: 0, x: -8 }}
                             style={{ color: 'rgba(245,247,251,0.52)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}
                           >
-                            {p.location}
+                            {label}
                           </motion.span>
                         )}
                       </AnimatePresence>
@@ -431,9 +684,9 @@ export default function Home() {
                 }}
               >
                 <span style={{ color: 'rgba(245,247,251,0.25)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}>
-                  {activeSection < PROPERTIES.length ? 'Continue scrolling' : 'Last property'}
+                  {activeSection < TOTAL_SECTIONS - 2 ? 'Continue scrolling' : 'Final chapter'}
                 </span>
-                {activeSection < PROPERTIES.length && <ChevronDown size={13} color="rgba(245,247,251,0.25)" />}
+                {activeSection < TOTAL_SECTIONS - 2 && <ChevronDown size={13} color="rgba(245,247,251,0.25)" />}
               </motion.div>
             )}
           </AnimatePresence>
