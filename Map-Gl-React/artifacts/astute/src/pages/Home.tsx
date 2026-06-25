@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, BarChart3, Building2, ChevronDown, Gauge, Layers, MapPin, Radar, Shield, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowRight, BarChart3, Building2, Gauge, Layers, MapPin, Radar, Shield, Sparkles, TrendingUp } from 'lucide-react';
 import { PROPERTIES, fmtCurrency, totalUnits } from '../lib/portfolioData';
 import type { Property } from '../lib/portfolioData';
 import MapBackground from '../components/home/MapBackground';
@@ -39,20 +39,21 @@ interface NumericMetric {
 }
 
 interface BentoSection {
-  eyebrow: string;
+  label: string;
   title: string;
   body: string;
   metric: NumericMetric;
   to: string;
   cta: string;
+  tone: 'market' | 'portfolio' | 'strategy' | 'risk' | 'pipeline';
 }
 
 const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'hero',
     type: 'hero',
-    title: 'Map deals faster. Underwrite smarter.',
-    subtitle: 'Astute turns properties, market signals, risk, and future capital tracking into one cinematic investment operating system.',
+    title: 'Astute OS for real estate capital.',
+    subtitle: 'A cinematic map, portfolio terminal, and underwriting layer for faster investment decisions.',
     city: 'Regional Overview',
     camera: { center: [-73.62, 41.28], zoom: 6.65, pitch: 18, bearing: -9, duration: 2200 },
     metric: { label: 'Tracked markets', value: 3 },
@@ -60,8 +61,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'manhattan-core',
     type: 'landmark',
-    title: 'New York Market Core',
-    subtitle: 'Capital concentration, commuter gravity, and persistent housing demand define the underwriting baseline.',
+    title: 'Market gravity appears first.',
+    subtitle: 'Capital flows, commuter demand, and supply pressure set the first underwriting frame.',
     city: 'Manhattan',
     landmarkName: 'Manhattan',
     camera: { center: [-73.9855, 40.758], zoom: 12.25, pitch: 54, bearing: -34, duration: 2900 },
@@ -70,8 +71,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'hudson-crossing',
     type: 'landmark',
-    title: 'Hudson Crossing Access',
-    subtitle: 'Bridge, tunnel, rail, and waterfront access shape the rental demand field around New York.',
+    title: 'Access changes rent conviction.',
+    subtitle: 'Bridge, tunnel, rail, and waterfront proximity reshape the demand field around New York.',
     city: 'Hudson Corridor',
     landmarkName: 'George Washington Bridge',
     camera: { center: [-73.9527, 40.8517], zoom: 13.35, pitch: 58, bearing: 42, duration: 2500 },
@@ -80,8 +81,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'yonkers-rail',
     type: 'landmark',
-    title: 'Westchester Rail Node',
-    subtitle: 'Yonkers Station anchors a northern commuter basin with supply-constrained multifamily stock.',
+    title: 'A rail node becomes a thesis.',
+    subtitle: 'Yonkers Station anchors a northern commuter basin with constrained multifamily supply.',
     city: 'Yonkers',
     landmarkName: 'Yonkers Station',
     camera: { center: [-73.8847, 40.9357], zoom: 14.15, pitch: 54, bearing: 24, duration: 2100 },
@@ -90,8 +91,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'yonkers-property-1',
     type: 'property',
-    title: 'Elliott Avenue Quadruplex',
-    subtitle: 'Stable income, below-market rent upside, and a clean light-renovation path.',
+    title: 'The deal card narrows focus.',
+    subtitle: 'Stable income, below-market rent upside, and a clean renovation path surface on the map.',
     city: 'Yonkers',
     propertyId: 'elliott-yonkers',
     camera: { center: [-73.8988, 40.9312], zoom: 15.45, pitch: 56, bearing: -28, duration: 2200 },
@@ -99,8 +100,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'yonkers-property-2',
     type: 'property',
-    title: '92 Elliott Avenue',
-    subtitle: 'A second nearby income node with strong going-in yield and manageable execution.',
+    title: 'Cluster logic compounds.',
+    subtitle: 'A nearby income node reveals operating leverage, comparable rents, and execution overlap.',
     city: 'Yonkers',
     propertyId: 'elliott-92',
     camera: { center: [-73.8975, 40.932], zoom: 15.55, pitch: 58, bearing: 18, duration: 1900 },
@@ -108,8 +109,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'hudson-county-access',
     type: 'landmark',
-    title: 'Hudson County Access',
-    subtitle: 'Jersey City waterfront, Lincoln Tunnel proximity, and Newark Penn create a dense commuter web.',
+    title: 'Commuter webs expose basis.',
+    subtitle: 'Jersey City waterfront, tunnel proximity, and Newark Penn create a dense access screen.',
     city: 'Hudson County',
     landmarkName: 'Jersey City Waterfront',
     camera: { center: [-74.041, 40.742], zoom: 11.75, pitch: 50, bearing: -22, duration: 2400 },
@@ -118,8 +119,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'union-city-property',
     type: 'property',
-    title: 'Summit Ave Multifamily',
-    subtitle: 'A high-upside basis play with major rent-to-market opportunity.',
+    title: 'Upside meets execution risk.',
+    subtitle: 'A high-upside basis play is scored against rent gap, renovation lift, and financing sensitivity.',
     city: 'Union City',
     propertyId: 'union-city-summit',
     camera: { center: [-74.0263, 40.7695], zoom: 15.35, pitch: 57, bearing: -18, duration: 2200 },
@@ -127,24 +128,24 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'leaving-nyc',
     type: 'transition',
-    title: 'Leaving NYC',
-    subtitle: 'The camera pulls back before transferring from Hudson density to Boston innovation markets.',
+    title: 'The map pulls capital outward.',
+    subtitle: 'Astute shifts from Hudson density to Boston innovation markets without losing portfolio context.',
     city: 'Market Transfer',
     camera: { center: [-73.15, 41.22], zoom: 7.05, pitch: 20, bearing: 34, duration: 3900 },
   },
   {
     id: 'welcome-boston',
     type: 'transition',
-    title: 'Welcome to Boston',
-    subtitle: 'Education, biotech, transit, and supply-constrained housing reset the opportunity map.',
+    title: 'A new market resets the lens.',
+    subtitle: 'Education, biotech, transit, and constrained housing create a different decision surface.',
     city: 'Boston Metro',
     camera: { center: [-71.075, 42.36], zoom: 11.25, pitch: 48, bearing: -32, duration: 3400 },
   },
   {
     id: 'boston-core',
     type: 'landmark',
-    title: 'Boston Civic Core',
-    subtitle: 'Historic center, persistent renter demand, and deep capital-market liquidity.',
+    title: 'Liquidity anchors the core.',
+    subtitle: 'Historic demand and capital-market depth establish the Boston underwriting baseline.',
     city: 'Boston',
     landmarkName: 'Boston Common',
     camera: { center: [-71.0656, 42.3555], zoom: 13.25, pitch: 55, bearing: 28, duration: 2300 },
@@ -153,8 +154,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'cambridge-spine',
     type: 'landmark',
-    title: 'Cambridge Innovation Spine',
-    subtitle: 'Harvard, MIT, and Kendall Square create durable demand pressure.',
+    title: 'Innovation pressure prices in.',
+    subtitle: 'Harvard, MIT, and Kendall Square translate durable demand into a premium rent signal.',
     city: 'Cambridge',
     landmarkName: 'Harvard / MIT area',
     camera: { center: [-71.097, 42.369], zoom: 13.65, pitch: 60, bearing: -48, duration: 2600 },
@@ -163,8 +164,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'davis-square',
     type: 'landmark',
-    title: 'Davis Square Demand Pocket',
-    subtitle: 'Transit access and constrained supply frame the Somerville opportunity set.',
+    title: 'Transit pockets become targets.',
+    subtitle: 'Davis Square combines rail access, renter depth, and tight supply into a focused opportunity set.',
     city: 'Somerville',
     landmarkName: 'Somerville Davis Square',
     camera: { center: [-71.1223, 42.3967], zoom: 14.1, pitch: 55, bearing: -18, duration: 2100 },
@@ -173,8 +174,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'somerville-property-1',
     type: 'property',
-    title: '13 Arlington Street',
-    subtitle: 'A Boston metro asset in a deep rental market with durable tenant demand.',
+    title: 'The asset enters diligence.',
+    subtitle: 'A Boston metro property is framed by demand, basis, renovation scope, and hold strategy.',
     city: 'Somerville',
     propertyId: 'arlington-somerville',
     camera: { center: [-71.1006, 42.3919], zoom: 15.55, pitch: 58, bearing: 28, duration: 2100 },
@@ -182,8 +183,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'somerville-property-2',
     type: 'property',
-    title: '25-27 Upland Road',
-    subtitle: 'A two-building multifamily opportunity with conservative rent-growth upside.',
+    title: 'Portfolio fit closes the loop.',
+    subtitle: 'A two-building opportunity is compared against score, units, risk, and market fit.',
     city: 'Somerville',
     propertyId: 'upland-somerville',
     camera: { center: [-71.1112, 42.3886], zoom: 15.55, pitch: 58, bearing: -24, duration: 2100 },
@@ -191,8 +192,8 @@ const CINEMATIC_CHAPTERS: Chapter[] = [
   {
     id: 'outro',
     type: 'outro',
-    title: 'Portfolio Intelligence',
-    subtitle: 'A Northeast acquisition pipeline mapped by risk, upside, and execution priority.',
+    title: 'A pipeline becomes an operating system.',
+    subtitle: 'Every asset stays mapped by risk, upside, liquidity, and execution priority.',
     city: 'Astute OS',
     camera: { center: [-72.62, 41.64], zoom: 6.9, pitch: 18, bearing: -10, duration: 3100 },
     metric: { label: 'Total units', value: totalUnits },
@@ -209,42 +210,55 @@ const LOCATION_INTELLIGENCE: Record<string, string[]> = {
 
 const bentoSections: BentoSection[] = [
   {
-    eyebrow: 'Deal Command Center',
-    title: 'Pipeline, comps, and deal quality in one operating view.',
-    body: 'Portfolio turns fragmented acquisition targets into ranked, filterable intelligence with pricing, unit mix, score, and market context.',
-    metric: { label: 'Active properties', value: PROPERTIES.length },
-    to: '/portfolio',
-    cta: 'Open Portfolio',
-  },
-  {
-    eyebrow: 'Underwriting Lab',
-    title: 'Model the strategy before the memo gets written.',
-    body: 'Strategy connects rent growth, debt costs, exit caps, and hold period into a clean sensitivity surface for fast scenario framing.',
-    metric: { label: 'Target IRR midpoint', value: 22, suffix: '%' },
-    to: '/strategy',
-    cta: 'View Strategy',
-  },
-  {
-    eyebrow: 'Market Terminal',
-    title: 'Market pulse, cap rates, and rent trends with dashboard rhythm.',
-    body: 'Insights brings dispatches, charts, market signals, and portfolio return context into a Bloomberg-inspired intelligence layer.',
+    label: 'Market intelligence',
+    title: 'Market signals stay attached to place.',
+    body: 'Transit, liquidity, rent pressure, and supply constraints move with the camera so geography stays connected to underwriting.',
     metric: { label: 'Demand pulse', value: 82 },
     to: '/insights',
     cta: 'Read Insights',
+    tone: 'market',
   },
   {
-    eyebrow: 'Capital OS Coming Soon',
-    title: 'Real estate, stocks, ETFs, crypto, and cash tracked together.',
-    body: 'Astute is designed to expand beyond property into a full capital dashboard for assets, liquidity, exposure, and future planning.',
-    metric: { label: 'Asset classes', value: 5 },
+    label: 'Portfolio tracking',
+    title: 'Every target lives in one ranked book.',
+    body: 'Portfolio turns acquisition targets into a scored, filterable view with pricing, unit mix, market context, and memo access.',
+    metric: { label: 'Active properties', value: PROPERTIES.length },
+    to: '/portfolio',
+    cta: 'Open Portfolio',
+    tone: 'portfolio',
+  },
+  {
+    label: 'Underwriting strategy',
+    title: 'Scenarios turn quickly into conviction.',
+    body: 'Strategy connects rent growth, debt costs, exit caps, and hold period into a clean sensitivity surface for memo-ready decisions.',
+    metric: { label: 'Target IRR midpoint', value: 22, suffix: '%' },
+    to: '/strategy',
+    cta: 'View Strategy',
+    tone: 'strategy',
+  },
+  {
+    label: 'Property risk',
+    title: 'Risk is visible before the memo.',
+    body: 'Older systems, tax pressure, financing sensitivity, and execution complexity appear beside the upside case instead of after it.',
+    metric: { label: 'Risk factors', value: 14 },
+    to: '/portfolio',
+    cta: 'Review Deals',
+    tone: 'risk',
+  },
+  {
+    label: 'Deal pipeline',
+    title: 'Capital allocation gets a flight deck.',
+    body: 'Astute is built to expand from property into a broader capital dashboard for liquidity, exposure, and future planning.',
+    metric: { label: 'Pipeline value', value: 9.2, prefix: '$', suffix: 'M', decimals: 1 },
     to: '/portfolio',
     cta: 'Preview Roadmap',
+    tone: 'pipeline',
   },
 ];
 
 function ChapterMetric({ chapter, property }: { chapter: Chapter; property?: Property }) {
   const metric: NumericMetric = property
-    ? { label: 'Property score', value: property.score, suffix: '' }
+        ? { label: 'Asset score', value: property.score, suffix: '' }
     : chapter.metric ?? { label: 'Signal score', value: 82 };
 
   return (
@@ -332,7 +346,7 @@ export default function Home() {
           <div className="os-top-dock">
             <span className="os-logo"><BarChart3 size={15} /> Astute OS</span>
             <span>{activeChapter.city}</span>
-            <span>{String(activeChapterIndex + 1).padStart(2, '0')} / {CINEMATIC_CHAPTERS.length}</span>
+            <span>{activeChapterIndex + 1} of {CINEMATIC_CHAPTERS.length}</span>
           </div>
 
           <div className="chapter-rail" aria-label="Cinematic chapters">
@@ -358,7 +372,7 @@ export default function Home() {
             >
               <span className="hero-badge">
                 <Sparkles size={12} />
-                {activeChapter.type === 'hero' ? 'AI-built real estate intelligence' : activeChapter.type}
+                {activeChapter.type === 'hero' ? 'Real estate intelligence' : activeChapter.city}
               </span>
               <RevealWords
                 key={`${activeChapter.id}-title`}
@@ -382,7 +396,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.48, duration: 0.45 }}
                 >
-                  <Link to="/portfolio" className="os-cta os-cta-primary">Open Portfolio <ArrowRight size={15} /></Link>
+                  <Link to="/portfolio" className="os-cta os-cta-primary">Open Portfolio <span><ArrowRight size={14} /></span></Link>
                   <Link to="/strategy" className="os-cta os-cta-ghost">View Strategy</Link>
                 </motion.div>
               )}
@@ -453,45 +467,36 @@ export default function Home() {
 
           <div className="chapter-footer">
             <button type="button" onClick={() => goToChapter(-1)} disabled={activeChapterIndex === 0}>Previous</button>
-            <span>Scroll to next signal</span>
+            <span>Wheel or tap advances chapter</span>
             <button type="button" onClick={() => goToChapter(1)} disabled={activeChapterIndex === CINEMATIC_CHAPTERS.length - 1}>Next</button>
           </div>
-        </motion.div>
-
-        <motion.div
-          className="hero-scroll-cue"
-          animate={{ y: [0, 7, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <ChevronDown size={16} />
-          <span>{activeChapterIndex === CINEMATIC_CHAPTERS.length - 1 ? 'Continue to product story' : 'One scroll advances one chapter'}</span>
         </motion.div>
       </section>
 
       <section className="home-bento-story">
         <div className="section">
           <div className="story-heading">
-            <span>Astute Product System</span>
             <RevealWords as="h2" text="From map signal to investment decision." />
-            <p>Each module is designed as an operating layer: source the deal, underwrite the risk, watch the market, and prepare the capital stack.</p>
+            <p>Each module acts as an operating layer: source the deal, underwrite the risk, watch the market, and prepare the capital stack.</p>
           </div>
 
           <div className="bento-grid">
             {bentoSections.map((section, index) => (
               <motion.article
-                key={section.eyebrow}
+                key={section.label}
                 className="story-bento-card"
+                data-tone={section.tone}
                 initial={{ opacity: 0, y: 24, scale: 0.985 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, amount: 0.28 }}
                 transition={{ duration: 0.62, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <span>{section.eyebrow}</span>
+                <span>{section.label}</span>
                 <h3>{section.title}</h3>
                 <p>{section.body}</p>
                 <div className="story-card-metric">
                   <small>{section.metric.label}</small>
-                  <strong><AnimatedNumber value={section.metric.value} suffix={section.metric.suffix} /></strong>
+                  <strong><AnimatedNumber value={section.metric.value} prefix={section.metric.prefix} suffix={section.metric.suffix} decimals={section.metric.decimals} /></strong>
                 </div>
                 <Link to={section.to}>{section.cta} <ArrowRight size={14} /></Link>
               </motion.article>
