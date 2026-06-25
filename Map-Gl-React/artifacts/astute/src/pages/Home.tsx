@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ChevronDown, TrendingUp, Building2, Layers, DollarSign } from 'lucide-react';
@@ -9,6 +9,7 @@ import type { MapBackgroundHandle } from '../components/home/MapBackground';
 import type { CameraOptions, LandmarkName } from '../components/home/CinematicMapCanvas';
 
 const SCORE_COLOR = (s: number) => s >= 90 ? '#5ee0a1' : s >= 85 ? '#9fb8ff' : '#d6b66a';
+const Landmark3DOverlay = lazy(() => import('../components/home/Landmark3DOverlay'));
 
 type Chapter =
   | {
@@ -202,6 +203,33 @@ export default function Home() {
   const activePropertyOrdinal = activeProperty
     ? propertyChapters.findIndex((chapter) => chapter.propertyId === activeProperty.id) + 1
     : 0;
+  const showCinematic3D = activeChapter.type === 'landmark' || activeChapter.type === 'transition';
+
+  useEffect(() => {
+    let rafId = 0;
+    let lenis: { raf: (time: number) => void; destroy: () => void } | null = null;
+    let cancelled = false;
+
+    import('lenis').then(({ default: Lenis }) => {
+      if (cancelled) return;
+      lenis = new Lenis({
+        duration: 1.45,
+        smoothWheel: true,
+        wheelMultiplier: 0.85,
+      });
+      const raf = (time: number) => {
+        lenis?.raf(time);
+        rafId = requestAnimationFrame(raf);
+      };
+      rafId = requestAnimationFrame(raf);
+    });
+
+    return () => {
+      cancelled = true;
+      if (rafId) cancelAnimationFrame(rafId);
+      lenis?.destroy();
+    };
+  }, []);
 
   return (
     <div style={{ marginTop: -64, position: 'relative' }}>
@@ -220,6 +248,18 @@ export default function Home() {
 
           {/* CSS particle field (no WebGL) */}
           <ParticleField />
+
+          <Suspense fallback={null}>
+            <Landmark3DOverlay
+              visible={showCinematic3D}
+              chapterType={activeChapter.type}
+              landmarkName={activeChapter.type === 'landmark' ? activeChapter.landmarkName : activeChapter.type === 'transition' ? activeChapter.title : undefined}
+            />
+          </Suspense>
+
+          <div className="cinematic-fog" />
+          <div className="cinematic-streaks" data-active={activeChapter.type === 'transition'} />
+          <div className="cinematic-sweep" />
 
           {/* Bottom vignette */}
           <div style={{

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   BarChart3,
   Building2,
+  ChevronRight,
   DollarSign,
   LayoutGrid,
   Layers,
@@ -12,6 +13,16 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from 'recharts';
 import { PROPERTIES, fmtCurrency, portfolioValue, totalUnits } from '../lib/portfolioData';
 import type { Property } from '../lib/portfolioData';
 import PropertyCard from '../components/portfolio/PropertyCard';
@@ -19,8 +30,10 @@ import MapView from '../components/portfolio/MapView';
 
 type View = 'grid' | 'map' | 'analytics';
 type SortKey = 'score' | 'price' | 'units' | 'ppu';
+type OpportunityLens = 'Manual' | 'Best upside' | 'Safest yield' | 'Lowest basis' | 'Highest score';
 
 const marketLabels = ['All', 'Westchester', 'Hudson County', 'Boston Metro'];
+const opportunityLenses: OpportunityLens[] = ['Best upside', 'Safest yield', 'Lowest basis', 'Highest score'];
 
 function parsePercentRange(value: string) {
   const nums = value.match(/\d+(\.\d+)?/g)?.map(Number) ?? [0];
@@ -54,6 +67,8 @@ function AnalyticsMode({ properties }: { properties: Property[] }) {
   const lowestPpu = [...properties].sort((a, b) => a.pricePerUnit - b.pricePerUnit)[0];
   const largestUnits = [...properties].sort((a, b) => b.units - a.units)[0];
   const ranking = [...properties].sort((a, b) => b.score - a.score);
+  const allocationChart = allocation.map((item) => ({ name: item.market, value: item.value }));
+  const chartColors = ['#9fb8ff', '#d6b66a', '#5ee0a1'];
 
   return (
     <div style={{ display: 'grid', gap: 20 }}>
@@ -66,6 +81,16 @@ function AnalyticsMode({ properties }: { properties: Property[] }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: 20 }}>
         <div className="glass" style={{ borderRadius: 22, padding: 22 }}>
           <h2 style={{ margin: '0 0 18px', color: '#f5f7fb', fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em' }}>Allocation by Market</h2>
+          <ResponsiveContainer width="100%" height={170}>
+            <PieChart>
+              <Pie data={allocationChart} dataKey="value" nameKey="name" innerRadius={46} outerRadius={70} paddingAngle={4}>
+                {allocationChart.map((entry, index) => (
+                  <Cell key={entry.name} fill={chartColors[index % chartColors.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: number) => fmtCurrency(value)} contentStyle={{ background: '#0c0f16', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12 }} />
+            </PieChart>
+          </ResponsiveContainer>
           <div style={{ display: 'grid', gap: 16 }}>
             {allocation.map(({ market, count, value, pct }) => (
               <div key={market}>
@@ -90,6 +115,13 @@ function AnalyticsMode({ properties }: { properties: Property[] }) {
 
         <div className="glass" style={{ borderRadius: 22, padding: 22, overflowX: 'auto' }}>
           <h2 style={{ margin: '0 0 18px', color: '#f5f7fb', fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em' }}>Mini Ranking</h2>
+          <ResponsiveContainer width="100%" height={150}>
+            <BarChart data={ranking.map((property) => ({ name: property.name.split(' ')[0], score: property.score }))}>
+              <XAxis dataKey="name" tick={{ fill: 'rgba(245,247,251,0.42)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: '#0c0f16', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12 }} />
+              <Bar dataKey="score" fill="#5ee0a1" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 620 }}>
             <thead>
               <tr>
@@ -124,6 +156,8 @@ export default function Portfolio() {
   const [sortKey, setSortKey] = useState<SortKey>('score');
   const [query, setQuery] = useState('');
   const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [lens, setLens] = useState<OpportunityLens>('Highest score');
+  const [drawerProperty, setDrawerProperty] = useState<Property | null>(null);
 
   const visibleProperties = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -135,12 +169,16 @@ export default function Portfolio() {
           .some((field) => field.toLowerCase().includes(q));
       })
       .sort((a, b) => {
+        if (lens === 'Best upside') return parsePercentRange(b.irr) - parsePercentRange(a.irr);
+        if (lens === 'Safest yield') return b.financials.capRateIn - a.financials.capRateIn;
+        if (lens === 'Lowest basis') return a.pricePerUnit - b.pricePerUnit;
+        if (lens === 'Highest score') return b.score - a.score;
         if (sortKey === 'score') return b.score - a.score;
         if (sortKey === 'price') return b.askingPrice - a.askingPrice;
         if (sortKey === 'units') return b.units - a.units;
         return a.pricePerUnit - b.pricePerUnit;
       });
-  }, [market, query, sortKey]);
+  }, [lens, market, query, sortKey]);
 
   const comparedProperties = useMemo(
     () => compareIds.map((id) => PROPERTIES.find((property) => property.id === id)).filter(Boolean) as Property[],
@@ -268,6 +306,27 @@ export default function Portfolio() {
             </div>
 
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 14 }}>
+              {opportunityLenses.map((label) => (
+                <button
+                  key={label}
+                  onClick={() => setLens(label)}
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 999,
+                    padding: '8px 13px',
+                    background: lens === label ? 'rgba(214,182,106,0.16)' : 'rgba(255,255,255,0.045)',
+                    color: lens === label ? '#ead08f' : 'rgba(245,247,251,0.48)',
+                    fontSize: 12,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 14 }}>
               {marketLabels.map((label) => (
                 <button
                   key={label}
@@ -295,7 +354,10 @@ export default function Portfolio() {
               ] as const).map(([key, label]) => (
                 <button
                   key={key}
-                  onClick={() => setSortKey(key)}
+                  onClick={() => {
+                    setLens('Manual');
+                    setSortKey(key);
+                  }}
                   style={{
                     border: '1px solid rgba(255,255,255,0.1)',
                     borderRadius: 999,
@@ -348,6 +410,30 @@ export default function Portfolio() {
                   >
                     <Scale size={11} />
                     {selected ? 'Selected' : 'Compare'}
+                  </button>
+                  <button
+                    onClick={() => setDrawerProperty(property)}
+                    style={{
+                      position: 'absolute',
+                      top: 14,
+                      left: 14,
+                      zIndex: 5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      border: '1px solid rgba(255,255,255,0.14)',
+                      borderRadius: 999,
+                      padding: '6px 10px',
+                      background: 'rgba(5,6,9,0.62)',
+                      color: 'rgba(245,247,251,0.78)',
+                      backdropFilter: 'blur(18px)',
+                      WebkitBackdropFilter: 'blur(18px)',
+                      fontSize: 10,
+                      fontWeight: 900,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Inspect <ChevronRight size={11} />
                   </button>
                   <PropertyCard p={property} />
                 </div>
@@ -406,6 +492,61 @@ export default function Portfolio() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {drawerProperty && (
+        <div
+          onMouseDown={() => setDrawerProperty(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+        >
+          <aside
+            onMouseDown={(event) => event.stopPropagation()}
+            style={{
+              position: 'absolute',
+              top: 18,
+              right: 18,
+              bottom: 18,
+              width: 'min(440px, calc(100vw - 36px))',
+              borderRadius: 28,
+              background: 'linear-gradient(145deg, rgba(10,13,20,0.88), rgba(255,255,255,0.055))',
+              border: '1px solid rgba(255,255,255,0.13)',
+              boxShadow: '0 50px 160px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.12)',
+              backdropFilter: 'blur(34px)',
+              WebkitBackdropFilter: 'blur(34px)',
+              padding: 22,
+              overflowY: 'auto',
+            }}
+          >
+            <button onClick={() => setDrawerProperty(null)} style={{ float: 'right', border: 0, background: 'rgba(255,255,255,0.08)', color: '#f5f7fb', borderRadius: 999, width: 32, height: 32, cursor: 'pointer' }}>
+              <X size={15} />
+            </button>
+            <p style={{ margin: '0 0 8px', color: '#9fb8ff', fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{drawerProperty.tag}</p>
+            <h2 style={{ margin: '0 0 10px', color: '#f5f7fb', fontSize: 26, fontWeight: 900, letterSpacing: '-0.035em' }}>{drawerProperty.name}</h2>
+            <p style={{ margin: '0 0 20px', color: 'rgba(245,247,251,0.52)', fontSize: 13, lineHeight: 1.65 }}>{drawerProperty.thesis}</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
+              {[
+                ['Price', fmtCurrency(drawerProperty.askingPrice), '#f5f7fb'],
+                ['Units', String(drawerProperty.units), '#d6b66a'],
+                ['Cap Rate', drawerProperty.cap, '#9fb8ff'],
+                ['Target IRR', drawerProperty.irr, '#5ee0a1'],
+              ].map(([label, value, color]) => (
+                <div key={label} style={{ borderRadius: 16, padding: 13, background: 'rgba(255,255,255,0.055)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <p style={{ margin: '0 0 4px', color: 'rgba(245,247,251,0.36)', fontSize: 9, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</p>
+                  <p style={{ margin: 0, color, fontWeight: 900 }}>{value}</p>
+                </div>
+              ))}
+            </div>
+            <h3 style={{ margin: '0 0 10px', color: '#f5f7fb', fontSize: 14, fontWeight: 900 }}>Value-Add Plan</h3>
+            <div style={{ display: 'grid', gap: 8 }}>
+              {drawerProperty.valuePlan.map((item, index) => (
+                <div key={item} style={{ display: 'flex', gap: 10, color: 'rgba(245,247,251,0.62)', fontSize: 13, lineHeight: 1.5 }}>
+                  <span style={{ color: '#5ee0a1', fontWeight: 900 }}>{String(index + 1).padStart(2, '0')}</span>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </aside>
         </div>
       )}
     </div>

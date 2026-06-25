@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { TrendingUp, MapPin, Zap, BarChart2 } from 'lucide-react';
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  AreaChart, Area,
+  AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, Radar,
 } from 'recharts';
 import { PROPERTIES, fmtCurrency } from '../lib/portfolioData';
 
@@ -128,6 +128,13 @@ export default function Insights() {
             : point.cap,
     }))
   ), [selectedMarket]);
+  const opportunityRadar = useMemo(() => [
+    { subject: 'Rent Growth', value: Number(profile.rentGrowth.replace('%', '')) * 16 },
+    { subject: 'Low Vacancy', value: 100 - Number(profile.vacancy.replace('%', '')) * 10 },
+    { subject: 'Liquidity', value: profile.signal },
+    { subject: 'Supply', value: profile.supplyPressure === 'Very low' ? 92 : profile.supplyPressure === 'Low' ? 84 : 68 },
+    { subject: 'Basis', value: selectedMarket === 'Hudson County' ? 94 : selectedMarket === 'Westchester' ? 82 : 74 },
+  ], [profile, selectedMarket]);
   const filteredInsights = insights.filter(i =>
     activePulse === 'All' ||
     i.tag === activePulse ||
@@ -358,6 +365,38 @@ export default function Insights() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          </div>
+        </div>
+
+        {/* Portfolio IRR comparison */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 20, marginBottom: 40 }}>
+          <div className="glass" style={{ borderRadius: 22, padding: 22 }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 900, color: '#f5f7fb' }}>Opportunity Radar</h3>
+            <p style={{ margin: '0 0 16px', color: 'rgba(245,247,251,0.42)', fontSize: 12 }}>{selectedMarket} relative signal stack</p>
+            <ResponsiveContainer width="100%" height={250}>
+              <RadarChart data={opportunityRadar}>
+                <PolarGrid stroke="rgba(255,255,255,0.09)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(245,247,251,0.46)', fontSize: 11 }} />
+                <Radar dataKey="value" stroke={profile.color} fill={profile.color} fillOpacity={0.22} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="glass" style={{ borderRadius: 22, padding: 22 }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 900, color: '#f5f7fb' }}>What Changed This Month?</h3>
+            <p style={{ margin: '0 0 16px', color: 'rgba(245,247,251,0.42)', fontSize: 12 }}>Signals the acquisition desk would re-underwrite today</p>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {[
+                ['Rent momentum', `${selectedMarket} rent growth printed at ${profile.rentGrowth}, keeping mark-to-market upside active.`],
+                ['Vacancy read', `Vacancy sits near ${profile.vacancy}, supporting a ${profile.signal}/100 pulse score.`],
+                ['Demand driver', `${profile.demandDriver} remains the primary underwriting catalyst.`],
+                ['Supply pressure', `${profile.supplyPressure} supply pressure informs renovation timing and lease-up risk.`],
+              ].map(([label, body]) => (
+                <div key={label} style={{ borderRadius: 16, padding: 14, background: 'rgba(255,255,255,0.045)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <p style={{ margin: '0 0 4px', color: profile.color, fontSize: 11, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{label}</p>
+                  <p style={{ margin: 0, color: 'rgba(245,247,251,0.62)', fontSize: 13, lineHeight: 1.6 }}>{body}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
