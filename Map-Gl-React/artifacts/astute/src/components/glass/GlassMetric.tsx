@@ -5,7 +5,7 @@ export default function GlassMetric({
   label,
   value,
   icon,
-  color = '#f5f7fb',
+  color = '#F6F0E4',
 }: {
   label: string;
   value: string;
@@ -17,7 +17,7 @@ export default function GlassMetric({
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10 }}>
         {icon}
         <div>
-          <p style={{ margin: '0 0 4px', color: 'rgba(245,247,251,0.38)', fontSize: 9, fontWeight: 900, letterSpacing: '0.09em', textTransform: 'uppercase' }}>
+          <p style={{ margin: '0 0 4px', color: 'rgba(246,240,228,0.38)', fontSize: 9, fontWeight: 900, letterSpacing: '0.09em', textTransform: 'uppercase' }}>
             {label}
           </p>
           <p style={{ margin: 0, color, fontSize: 18, fontWeight: 900, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>

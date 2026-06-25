@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ChevronDown, TrendingUp, Building2, Layers, DollarSign } from 'lucide-react';
@@ -8,8 +8,7 @@ import MapBackground from '../components/home/MapBackground';
 import type { MapBackgroundHandle } from '../components/home/MapBackground';
 import type { CameraOptions, LandmarkName } from '../components/home/CinematicMapCanvas';
 
-const SCORE_COLOR = (s: number) => s >= 90 ? '#5ee0a1' : s >= 85 ? '#9fb8ff' : '#d6b66a';
-const Landmark3DOverlay = lazy(() => import('../components/home/Landmark3DOverlay'));
+const SCORE_COLOR = (s: number) => s >= 90 ? '#63CFA6' : s >= 85 ? '#8DB7FF' : '#DCC8A3';
 
 type Chapter =
   | {
@@ -203,7 +202,6 @@ export default function Home() {
   const activePropertyOrdinal = activeProperty
     ? propertyChapters.findIndex((chapter) => chapter.propertyId === activeProperty.id) + 1
     : 0;
-  const showCinematic3D = activeChapter.type === 'landmark' || activeChapter.type === 'transition';
 
   useEffect(() => {
     let rafId = 0;
@@ -249,14 +247,6 @@ export default function Home() {
           {/* CSS particle field (no WebGL) */}
           <ParticleField />
 
-          <Suspense fallback={null}>
-            <Landmark3DOverlay
-              visible={showCinematic3D}
-              chapterType={activeChapter.type}
-              landmarkName={activeChapter.type === 'landmark' ? activeChapter.landmarkName : activeChapter.type === 'transition' ? activeChapter.title : undefined}
-            />
-          </Suspense>
-
           <div className="cinematic-fog" />
           <div className="cinematic-streaks" data-active={activeChapter.type === 'transition'} />
           <div className="cinematic-sweep" />
@@ -264,13 +254,13 @@ export default function Home() {
           {/* Bottom vignette */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
-            background: 'linear-gradient(to top, rgba(5,6,9,0.9) 0%, transparent 100%)',
+            background: 'linear-gradient(to top, rgba(3,8,20,0.9) 0%, transparent 100%)',
             pointerEvents: 'none', zIndex: 8,
           }} />
           {/* Top vignette */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: 160,
-            background: 'linear-gradient(to bottom, rgba(5,6,9,0.75) 0%, transparent 100%)',
+            background: 'linear-gradient(to bottom, rgba(3,8,20,0.75) 0%, transparent 100%)',
             pointerEvents: 'none', zIndex: 8,
           }} />
 
@@ -295,8 +285,8 @@ export default function Home() {
                   transition={{ delay: 0.12, duration: 0.5 }}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 9,
-                    background: 'rgba(5,6,9,0.55)',
-                    border: '1px solid rgba(159,184,255,0.3)',
+                    background: 'rgba(3,8,20,0.55)',
+                    border: '1px solid rgba(79,140,255,0.3)',
                     backdropFilter: 'blur(28px)',
                     WebkitBackdropFilter: 'blur(28px)',
                     borderRadius: 999, padding: '8px 22px', marginBottom: 24,
@@ -305,9 +295,9 @@ export default function Home() {
                   <motion.div
                     animate={{ opacity: [1, 0.3, 1] }}
                     transition={{ duration: 2.5, repeat: Infinity }}
-                    style={{ width: 7, height: 7, borderRadius: '50%', background: '#5ee0a1', boxShadow: '0 0 10px #5ee0a1' }}
+                    style={{ width: 7, height: 7, borderRadius: '50%', background: '#63CFA6', boxShadow: '0 0 10px #63CFA6' }}
                   />
-                  <span style={{ fontSize: 11, color: '#9fb8ff', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 11, color: '#8DB7FF', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                     Tri-State · NY · NJ · MA
                   </span>
                 </motion.div>
@@ -332,31 +322,32 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.38, duration: 0.5 }}
-                  style={{ margin: '0 0 34px', color: 'rgba(245,247,251,0.4)', fontSize: 16, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}
+                  style={{ margin: '0 0 34px', color: 'rgba(246,240,228,0.4)', fontSize: 16, fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase' }}
                 >
                   Intelligence
                 </motion.p>
 
                 {/* Glass stats bar */}
                 <motion.div
+                  className="liquid-glass-card"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.48, duration: 0.5 }}
                   style={{
                     display: 'flex',
-                    background: 'rgba(5,6,9,0.5)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(36px)',
-                    WebkitBackdropFilter: 'blur(36px)',
-                    borderRadius: 24, overflow: 'hidden', marginBottom: 42,
-                    boxShadow: '0 30px 90px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
+                    background: 'rgba(6,20,38,0.38)',
+                    border: '1px solid rgba(243,231,208,0.12)',
+                    backdropFilter: 'blur(36px) saturate(155%)',
+                    WebkitBackdropFilter: 'blur(36px) saturate(155%)',
+                    borderRadius: 30, overflow: 'hidden', marginBottom: 42,
+                    boxShadow: '0 30px 100px rgba(0,0,0,0.48), 0 0 70px rgba(79,140,255,0.13), inset 0 1px 0 rgba(255,255,255,0.13)',
                   }}
                 >
                   {[
-                    { icon: DollarSign, label: 'Portfolio Value', value: fmtCurrency(portfolioValue), color: '#9fb8ff' },
-                    { icon: Building2, label: 'Properties', value: String(PROPERTIES.length), color: '#d6b66a' },
-                    { icon: Layers, label: 'Total Units', value: String(totalUnits), color: '#5ee0a1' },
-                    { icon: TrendingUp, label: 'Target IRR', value: '18–26%', color: '#ff6b7a' },
+                    { icon: DollarSign, label: 'Portfolio Value', value: fmtCurrency(portfolioValue), color: '#8DB7FF' },
+                    { icon: Building2, label: 'Properties', value: String(PROPERTIES.length), color: '#DCC8A3' },
+                    { icon: Layers, label: 'Total Units', value: String(totalUnits), color: '#63CFA6' },
+                    { icon: TrendingUp, label: 'Target IRR', value: '18–26%', color: '#D66A77' },
                   ].map(({ icon: Icon, label, value, color }, i, arr) => (
                     <div key={label} style={{
                       padding: '18px 34px', textAlign: 'center',
@@ -364,9 +355,9 @@ export default function Home() {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 6 }}>
                         <Icon size={10} color={color} />
-                        <p style={{ margin: 0, color: 'rgba(245,247,251,0.34)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700 }}>{label}</p>
+                        <p style={{ margin: 0, color: 'rgba(246,240,228,0.34)', fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700 }}>{label}</p>
                       </div>
-                      <p style={{ margin: 0, color: '#f5f7fb', fontWeight: 900, fontSize: 22, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+                      <p style={{ margin: 0, color: '#F6F0E4', fontWeight: 900, fontSize: 22, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
                     </div>
                   ))}
                 </motion.div>
@@ -377,10 +368,10 @@ export default function Home() {
                   transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}
                 >
-                  <span style={{ color: 'rgba(245,247,251,0.28)', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}>
+                  <span style={{ color: 'rgba(246,240,228,0.28)', fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600 }}>
                     Scroll to Explore
                   </span>
-                  <ChevronDown size={16} color="rgba(245,247,251,0.28)" />
+                  <ChevronDown size={16} color="rgba(246,240,228,0.28)" />
                 </motion.div>
               </motion.div>
             )}
@@ -414,16 +405,16 @@ export default function Home() {
                       }),
                 }}
               >
-                <div style={{
+                <div className="liquid-glass-card" style={{
                   padding: activeChapter.type === 'transition' ? '34px 44px' : '18px 22px',
                   borderRadius: activeChapter.type === 'transition' ? 32 : 22,
                   background: activeChapter.type === 'transition'
-                    ? 'rgba(4,5,9,0.44)'
-                    : 'rgba(4,5,9,0.58)',
-                  border: '1px solid rgba(255,255,255,0.13)',
-                  backdropFilter: 'blur(38px)',
-                  WebkitBackdropFilter: 'blur(38px)',
-                  boxShadow: '0 42px 130px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    ? 'rgba(6,20,38,0.42)'
+                    : 'rgba(6,20,38,0.36)',
+                  border: '1px solid rgba(243,231,208,0.13)',
+                  backdropFilter: 'blur(40px) saturate(155%)',
+                  WebkitBackdropFilter: 'blur(40px) saturate(155%)',
+                  boxShadow: '0 42px 140px rgba(0,0,0,0.56), 0 0 82px rgba(79,140,255,0.14), inset 0 1px 0 rgba(255,255,255,0.13)',
                 }}>
                   <div style={{
                     display: 'inline-flex',
@@ -432,7 +423,7 @@ export default function Home() {
                     marginBottom: activeChapter.type === 'transition' ? 16 : 10,
                     padding: '5px 11px',
                     borderRadius: 999,
-                    background: activeChapter.type === 'transition' ? 'rgba(159,184,255,0.12)' : 'rgba(255,255,255,0.06)',
+                    background: activeChapter.type === 'transition' ? 'rgba(79,140,255,0.12)' : 'rgba(255,255,255,0.06)',
                     border: '1px solid rgba(255,255,255,0.1)',
                   }}>
                     <motion.span
@@ -442,12 +433,12 @@ export default function Home() {
                         width: 6,
                         height: 6,
                         borderRadius: '50%',
-                        background: activeChapter.type === 'transition' ? '#9fb8ff' : '#5ee0a1',
-                        boxShadow: activeChapter.type === 'transition' ? '0 0 14px #9fb8ff' : '0 0 14px #5ee0a1',
+                        background: activeChapter.type === 'transition' ? '#8DB7FF' : '#63CFA6',
+                        boxShadow: activeChapter.type === 'transition' ? '0 0 14px #8DB7FF' : '0 0 14px #63CFA6',
                       }}
                     />
                     <span style={{
-                      color: activeChapter.type === 'transition' ? '#c4d4ff' : 'rgba(245,247,251,0.55)',
+                      color: activeChapter.type === 'transition' ? '#c4d4ff' : 'rgba(246,240,228,0.55)',
                       fontSize: 10,
                       fontWeight: 800,
                       letterSpacing: '0.1em',
@@ -458,7 +449,7 @@ export default function Home() {
                   </div>
                   <h2 style={{
                     margin: '0 0 8px',
-                    color: '#f5f7fb',
+                    color: '#F6F0E4',
                     fontSize: activeChapter.type === 'transition' ? 'clamp(42px, 7vw, 86px)' : 28,
                     lineHeight: activeChapter.type === 'transition' ? 0.96 : 1.05,
                     fontWeight: 900,
@@ -468,7 +459,7 @@ export default function Home() {
                   </h2>
                   <p style={{
                     margin: 0,
-                    color: 'rgba(245,247,251,0.52)',
+                    color: 'rgba(246,240,228,0.52)',
                     fontSize: activeChapter.type === 'transition' ? 16 : 13,
                     lineHeight: 1.65,
                     maxWidth: 520,
@@ -494,13 +485,13 @@ export default function Home() {
                   transform: 'translateY(-50%)', width: 344, zIndex: 30,
                 }}
               >
-                <div style={{
-                  background: 'rgba(4,5,9,0.56)',
-                  border: '1px solid rgba(255,255,255,0.14)',
-                  backdropFilter: 'blur(40px)',
-                  WebkitBackdropFilter: 'blur(40px)',
-                  borderRadius: 28, overflow: 'hidden',
-                  boxShadow: '0 56px 160px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.09)',
+                <div className="liquid-glass-card" style={{
+                  background: 'rgba(6,20,38,0.38)',
+                  border: '1px solid rgba(243,231,208,0.14)',
+                  backdropFilter: 'blur(42px) saturate(155%)',
+                  WebkitBackdropFilter: 'blur(42px) saturate(155%)',
+                  borderRadius: 32, overflow: 'hidden',
+                  boxShadow: '0 56px 170px rgba(0,0,0,0.66), 0 0 78px rgba(79,140,255,0.13), inset 0 1px 0 rgba(255,255,255,0.12)',
                 }}>
                   {/* Image */}
                   <div style={{ position: 'relative', height: 188, overflow: 'hidden' }}>
@@ -515,46 +506,46 @@ export default function Home() {
                     />
                     <div style={{
                       position: 'absolute', inset: 0,
-                      background: 'linear-gradient(to top, rgba(4,5,9,0.93) 0%, rgba(4,5,9,0.08) 55%)',
+                      background: 'linear-gradient(to top, rgba(5,16,31,0.93) 0%, rgba(5,16,31,0.08) 55%)',
                     }} />
 
                     {/* Geo tag */}
                     <div style={{
                       position: 'absolute', top: 14, left: 14,
-                      background: 'rgba(79,114,255,0.18)', border: '1px solid rgba(79,114,255,0.36)',
+                      background: 'rgba(79,140,255,0.18)', border: '1px solid rgba(79,140,255,0.36)',
                       backdropFilter: 'blur(14px)', borderRadius: 999,
                       padding: '4px 13px', fontSize: 10, fontWeight: 700,
-                      color: '#9fb8ff', letterSpacing: '0.07em', textTransform: 'uppercase',
+                      color: '#8DB7FF', letterSpacing: '0.07em', textTransform: 'uppercase',
                     }}>{activeProperty.tag}</div>
 
                     {/* Score */}
                     <div style={{
                       position: 'absolute', top: 14, right: 14,
-                      background: 'rgba(4,5,9,0.72)', backdropFilter: 'blur(14px)',
+                      background: 'rgba(5,16,31,0.48)', backdropFilter: 'blur(14px)',
                       border: `1px solid ${SCORE_COLOR(activeProperty.score)}44`,
                       borderRadius: 14, padding: '7px 14px', textAlign: 'center',
                     }}>
                       <p style={{ margin: 0, color: SCORE_COLOR(activeProperty.score), fontSize: 24, fontWeight: 900, lineHeight: 1 }}>
                         {activeProperty.score}
                       </p>
-                      <p style={{ margin: 0, color: 'rgba(245,247,251,0.36)', fontSize: 8, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700 }}>Score</p>
+                      <p style={{ margin: 0, color: 'rgba(246,240,228,0.36)', fontSize: 8, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700 }}>Score</p>
                     </div>
 
                     {/* Counter */}
-                    <div style={{ position: 'absolute', bottom: 13, left: 15, color: 'rgba(245,247,251,0.4)', fontSize: 11, fontWeight: 600 }}>
+                    <div style={{ position: 'absolute', bottom: 13, left: 15, color: 'rgba(246,240,228,0.4)', fontSize: 11, fontWeight: 600 }}>
                       {activePropertyOrdinal} of {propertyChapters.length}
                     </div>
                   </div>
 
                   {/* Body */}
                   <div style={{ padding: '18px 22px 24px' }}>
-                    <p style={{ margin: '0 0 3px', color: 'rgba(245,247,251,0.34)', fontSize: 10, letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>
+                    <p style={{ margin: '0 0 3px', color: 'rgba(246,240,228,0.34)', fontSize: 10, letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>
                       {activeProperty.type}
                     </p>
-                    <h2 style={{ margin: '0 0 7px', color: '#f5f7fb', fontSize: 21, fontWeight: 900, letterSpacing: '-0.025em', lineHeight: 1.18 }}>
+                    <h2 style={{ margin: '0 0 7px', color: '#F6F0E4', fontSize: 21, fontWeight: 900, letterSpacing: '-0.025em', lineHeight: 1.18 }}>
                       {activeProperty.name}
                     </h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 18, color: 'rgba(245,247,251,0.38)', fontSize: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 18, color: 'rgba(246,240,228,0.38)', fontSize: 12 }}>
                       <MapPin size={11} />
                       {activeProperty.address}
                     </div>
@@ -562,30 +553,30 @@ export default function Home() {
                     {/* Metrics */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9, marginBottom: 17 }}>
                       {[
-                        { label: 'Asking Price', value: fmtCurrency(activeProperty.askingPrice), color: '#f5f7fb' },
-                        { label: 'Per Unit', value: fmtCurrency(activeProperty.pricePerUnit), color: '#f5f7fb' },
-                        { label: 'Units', value: `${activeProperty.units} units`, color: '#d6b66a' },
-                        { label: 'Target IRR', value: activeProperty.irr, color: '#5ee0a1' },
+                        { label: 'Asking Price', value: fmtCurrency(activeProperty.askingPrice), color: '#F6F0E4' },
+                        { label: 'Per Unit', value: fmtCurrency(activeProperty.pricePerUnit), color: '#F6F0E4' },
+                        { label: 'Units', value: `${activeProperty.units} units`, color: '#DCC8A3' },
+                        { label: 'Target IRR', value: activeProperty.irr, color: '#63CFA6' },
                       ].map(({ label, value, color }) => (
                         <div key={label} style={{
                           background: 'rgba(255,255,255,0.05)',
                           border: '1px solid rgba(255,255,255,0.07)',
                           borderRadius: 14, padding: '10px 13px',
                         }}>
-                          <p style={{ margin: '0 0 3px', color: 'rgba(245,247,251,0.32)', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>{label}</p>
+                          <p style={{ margin: '0 0 3px', color: 'rgba(246,240,228,0.32)', fontSize: 9, letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>{label}</p>
                           <p style={{ margin: 0, color, fontWeight: 800, fontSize: 15, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
                         </div>
                       ))}
                     </div>
 
-                    <p style={{ margin: '0 0 18px', color: 'rgba(245,247,251,0.46)', fontSize: 12, lineHeight: 1.7 }}>
+                    <p style={{ margin: '0 0 18px', color: 'rgba(246,240,228,0.46)', fontSize: 12, lineHeight: 1.7 }}>
                       {activeProperty.thesis.slice(0, 112)}…
                     </p>
 
                     <div style={{ marginBottom: 18 }}>
                       <p style={{
                         margin: '0 0 9px',
-                        color: 'rgba(245,247,251,0.38)',
+                        color: 'rgba(246,240,228,0.38)',
                         fontSize: 9,
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
@@ -604,8 +595,8 @@ export default function Home() {
                               padding: '5px 10px',
                               borderRadius: 999,
                               background: 'linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035))',
-                              border: '1px solid rgba(255,255,255,0.09)',
-                              color: 'rgba(245,247,251,0.6)',
+                              border: '1px solid rgba(243,231,208,0.10)',
+                              color: 'rgba(246,240,228,0.6)',
                               fontSize: 10,
                               fontWeight: 700,
                               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
@@ -621,14 +612,14 @@ export default function Home() {
                       to={`/portfolio/${activeProperty.id}`}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                        background: 'rgba(159,184,255,0.11)',
-                        border: '1px solid rgba(159,184,255,0.22)',
+                        background: 'rgba(79,140,255,0.11)',
+                        border: '1px solid rgba(79,140,255,0.22)',
                         borderRadius: 999, padding: '11px 0',
                         color: '#c4d4ff', fontSize: 12, fontWeight: 700, textDecoration: 'none',
                         letterSpacing: '0.02em', transition: '0.2s',
                       }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(159,184,255,0.2)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(159,184,255,0.11)'; }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(79,140,255,0.2)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(79,140,255,0.11)'; }}
                     >
                       View Full Deal Memo <ArrowRight size={13} />
                     </Link>
@@ -675,9 +666,9 @@ export default function Home() {
                   const isActive = chapterIndex === activeSection;
                   const chapterProperty = chapter.type === 'property' ? propertyById.get(chapter.propertyId) : null;
                   const color = chapter.type === 'transition'
-                    ? '#9fb8ff'
+                    ? '#8DB7FF'
                     : chapter.type === 'landmark'
-                      ? '#d6b66a'
+                      ? '#DCC8A3'
                       : SCORE_COLOR(chapterProperty?.score ?? 86);
                   const label = chapter.type === 'property'
                     ? chapterProperty?.location ?? 'Property'
@@ -697,7 +688,7 @@ export default function Home() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -8 }}
-                            style={{ color: 'rgba(245,247,251,0.52)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}
+                            style={{ color: 'rgba(246,240,228,0.52)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}
                           >
                             {label}
                           </motion.span>
@@ -723,10 +714,10 @@ export default function Home() {
                   display: 'flex', alignItems: 'center', gap: 7,
                 }}
               >
-                <span style={{ color: 'rgba(245,247,251,0.25)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}>
+                <span style={{ color: 'rgba(246,240,228,0.25)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}>
                   {activeSection < TOTAL_SECTIONS - 2 ? 'Continue scrolling' : 'Final chapter'}
                 </span>
-                {activeSection < TOTAL_SECTIONS - 2 && <ChevronDown size={13} color="rgba(245,247,251,0.25)" />}
+                {activeSection < TOTAL_SECTIONS - 2 && <ChevronDown size={13} color="rgba(246,240,228,0.25)" />}
               </motion.div>
             )}
           </AnimatePresence>
@@ -745,47 +736,48 @@ export default function Home() {
                 }}
               >
                 <motion.div
+                  className="liquid-glass-card"
                   initial={{ scale: 0.9, opacity: 0, y: 28 }}
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   transition={{ delay: 0.1, duration: 0.65, ease: [0.25, 0.46, 0.45, 0.94] }}
                   style={{
-                    background: 'rgba(4,5,9,0.62)',
-                    border: '1px solid rgba(255,255,255,0.13)',
-                    backdropFilter: 'blur(44px)',
-                    WebkitBackdropFilter: 'blur(44px)',
-                    borderRadius: 34, padding: '52px 64px',
+                    background: 'rgba(6,20,38,0.40)',
+                    border: '1px solid rgba(243,231,208,0.13)',
+                    backdropFilter: 'blur(46px) saturate(155%)',
+                    WebkitBackdropFilter: 'blur(46px) saturate(155%)',
+                    borderRadius: 38, padding: '52px 64px',
                     textAlign: 'center',
-                    boxShadow: '0 64px 180px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    boxShadow: '0 64px 190px rgba(0,0,0,0.68), 0 0 90px rgba(79,140,255,0.12), inset 0 1px 0 rgba(255,255,255,0.12)',
                   }}
                 >
                   <div style={{
                     width: 64, height: 64, borderRadius: 20, margin: '0 auto 28px',
-                    background: 'linear-gradient(135deg, #4f72ff 0%, #a78bfa 100%)',
+                    background: 'linear-gradient(135deg, #4F8CFF 0%, #DCC8A3 100%)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 0 48px rgba(79,114,255,0.5)',
+                    boxShadow: '0 0 48px rgba(79,140,255,0.5)',
                   }}>
-                    <Building2 size={30} color="white" strokeWidth={2} />
+                    <Building2 size={30} color="#030814" strokeWidth={2} />
                   </div>
 
-                  <p style={{ margin: '0 0 6px', color: 'rgba(245,247,251,0.38)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700 }}>
+                  <p style={{ margin: '0 0 6px', color: 'rgba(246,240,228,0.38)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700 }}>
                     Active Pipeline
                   </p>
-                  <h2 style={{ margin: '0 0 4px', fontSize: 48, fontWeight: 900, color: '#f5f7fb', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                  <h2 style={{ margin: '0 0 4px', fontSize: 48, fontWeight: 900, color: '#F6F0E4', letterSpacing: '-0.04em', lineHeight: 1 }}>
                     {PROPERTIES.length} Properties
                   </h2>
-                  <p style={{ margin: '0 0 8px', color: '#9fb8ff', fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em' }}>
+                  <p style={{ margin: '0 0 8px', color: '#8DB7FF', fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em' }}>
                     {fmtCurrency(portfolioValue)}
                   </p>
-                  <p style={{ margin: '0 0 32px', color: 'rgba(245,247,251,0.4)', fontSize: 15 }}>Across NY · NJ · MA</p>
+                  <p style={{ margin: '0 0 32px', color: 'rgba(246,240,228,0.4)', fontSize: 15 }}>Across NY · NJ · MA</p>
 
                   <div style={{ display: 'flex', gap: 20, justifyContent: 'center', marginBottom: 36 }}>
                     {[
-                      { label: 'Units', value: String(totalUnits), color: '#5ee0a1' },
-                      { label: 'Target IRR', value: '18–26%', color: '#ff6b7a' },
-                      { label: 'Avg Score', value: String(Math.round(PROPERTIES.reduce((s, p) => s + p.score, 0) / PROPERTIES.length)), color: '#d6b66a' },
+                      { label: 'Units', value: String(totalUnits), color: '#63CFA6' },
+                      { label: 'Target IRR', value: '18–26%', color: '#D66A77' },
+                      { label: 'Avg Score', value: String(Math.round(PROPERTIES.reduce((s, p) => s + p.score, 0) / PROPERTIES.length)), color: '#DCC8A3' },
                     ].map(({ label, value, color }) => (
                       <div key={label} style={{ textAlign: 'center' }}>
-                        <p style={{ margin: '0 0 3px', color: 'rgba(245,247,251,0.34)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>{label}</p>
+                        <p style={{ margin: '0 0 3px', color: 'rgba(246,240,228,0.34)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>{label}</p>
                         <p style={{ margin: 0, color, fontWeight: 900, fontSize: 24, letterSpacing: '-0.025em' }}>{value}</p>
                       </div>
                     ))}
@@ -794,7 +786,7 @@ export default function Home() {
                   <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
                     <Link to="/portfolio" style={{
                       display: 'flex', alignItems: 'center', gap: 8,
-                      background: '#f5f7fb', color: '#050609',
+                      background: '#F6F0E4', color: '#030814',
                       borderRadius: 999, padding: '13px 34px',
                       fontSize: 12, fontWeight: 800, textDecoration: 'none',
                       letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -804,8 +796,8 @@ export default function Home() {
                     <Link to="/strategy" style={{
                       display: 'flex', alignItems: 'center', gap: 8,
                       background: 'rgba(255,255,255,0.07)',
-                      border: '1px solid rgba(255,255,255,0.13)',
-                      color: '#f5f7fb', borderRadius: 999, padding: '13px 28px',
+                      border: '1px solid rgba(243,231,208,0.13)',
+                      color: '#F6F0E4', borderRadius: 999, padding: '13px 28px',
                       fontSize: 12, fontWeight: 700, textDecoration: 'none',
                     }}>
                       Our Strategy

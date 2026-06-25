@@ -23,12 +23,12 @@ export default function LiquidGlassPanel({
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 18, marginBottom: 18 }}>
           <div>
             {eyebrow && (
-              <p style={{ margin: '0 0 6px', color: 'rgba(245,247,251,0.38)', fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <p style={{ margin: '0 0 6px', color: 'rgba(246,240,228,0.38)', fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {eyebrow}
               </p>
             )}
             {title && (
-              <h2 style={{ margin: 0, color: '#f5f7fb', fontSize: 18, fontWeight: 900, letterSpacing: '-0.025em' }}>
+              <h2 style={{ margin: 0, color: '#F6F0E4', fontSize: 18, fontWeight: 900, letterSpacing: '-0.025em' }}>
                 {title}
               </h2>
             )}

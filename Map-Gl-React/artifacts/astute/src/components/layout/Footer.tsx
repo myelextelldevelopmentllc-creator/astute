@@ -4,20 +4,20 @@ import { BarChart2 } from 'lucide-react';
 export default function Footer() {
   return (
     <footer style={{
-      borderTop: '1px solid rgba(255,255,255,0.07)',
-      background: '#050609',
+      borderTop: '1px solid rgba(243,231,208,0.10)',
+      background: 'linear-gradient(180deg, rgba(5,16,31,0.28), #030814)',
       marginTop: 80,
     }}>
       <div className="section" style={{ paddingTop: 40, paddingBottom: 40, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 28, height: 28, borderRadius: 8,
-            background: 'linear-gradient(135deg, #4f72ff 0%, #a78bfa 100%)',
+            background: 'linear-gradient(135deg, #4F8CFF 0%, #DCC8A3 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <BarChart2 size={14} color="white" strokeWidth={2.5} />
+            <BarChart2 size={14} color="#030814" strokeWidth={2.5} />
           </div>
-          <span style={{ color: '#f5f7fb', fontWeight: 700, fontSize: 14 }}>Astute</span>
+          <span style={{ color: '#F6F0E4', fontWeight: 700, fontSize: 14 }}>Astute</span>
         </div>
         <div style={{ display: 'flex', gap: 24 }}>
           {[
@@ -25,12 +25,12 @@ export default function Footer() {
             { to: '/strategy', label: 'Strategy' },
             { to: '/insights', label: 'Insights' },
           ].map(({ to, label }) => (
-            <Link key={to} to={to} style={{ color: 'rgba(245,247,251,0.4)', fontSize: 12, textDecoration: 'none', transition: '0.2s' }}>
+            <Link key={to} to={to} style={{ color: 'rgba(246,240,228,0.4)', fontSize: 12, textDecoration: 'none', transition: '0.2s' }}>
               {label}
             </Link>
           ))}
         </div>
-        <p style={{ color: 'rgba(245,247,251,0.3)', fontSize: 11, margin: 0 }}>
+        <p style={{ color: 'rgba(246,240,228,0.3)', fontSize: 11, margin: 0 }}>
           © 2026 Astute Capital. All rights reserved.
         </p>
       </div>

@@ -13,7 +13,7 @@ import type { CameraOptions, CinematicMapCanvasHandle, LandmarkName } from './Ci
 
 const CinematicMapCanvas = lazy(() => import('./CinematicMapCanvas'));
 
-const SCORE_COLOR = (s: number) => s >= 90 ? '#5ee0a1' : s >= 85 ? '#9fb8ff' : '#d6b66a';
+const SCORE_COLOR = (s: number) => s >= 90 ? '#63CFA6' : s >= 85 ? '#8DB7FF' : '#DCC8A3';
 
 function GradientFallback({
   properties,
@@ -24,18 +24,18 @@ function GradientFallback({
 }) {
   const active = properties[Math.max(0, activeSection - 1) % properties.length];
   const gradients = [
-    'radial-gradient(ellipse at 28% 62%, rgba(79,114,255,0.24) 0%, transparent 58%), radial-gradient(ellipse at 72% 22%, rgba(94,224,161,0.12) 0%, transparent 48%)',
-    'radial-gradient(ellipse at 50% 42%, rgba(159,184,255,0.18) 0%, transparent 56%), radial-gradient(ellipse at 76% 66%, rgba(214,182,106,0.12) 0%, transparent 48%)',
-    'radial-gradient(ellipse at 20% 52%, rgba(94,224,161,0.18) 0%, transparent 52%), radial-gradient(ellipse at 84% 36%, rgba(159,184,255,0.12) 0%, transparent 50%)',
-    'radial-gradient(ellipse at 60% 70%, rgba(214,182,106,0.16) 0%, transparent 54%), radial-gradient(ellipse at 32% 20%, rgba(79,114,255,0.14) 0%, transparent 48%)',
-    'radial-gradient(ellipse at 45% 40%, rgba(159,184,255,0.2) 0%, transparent 54%), radial-gradient(ellipse at 70% 72%, rgba(94,224,161,0.1) 0%, transparent 48%)',
+    'radial-gradient(ellipse at 28% 62%, rgba(79,140,255,0.24) 0%, transparent 58%), radial-gradient(ellipse at 72% 22%, rgba(243,231,208,0.08) 0%, transparent 48%)',
+    'radial-gradient(ellipse at 50% 42%, rgba(79,140,255,0.18) 0%, transparent 56%), radial-gradient(ellipse at 76% 66%, rgba(243,231,208,0.12) 0%, transparent 48%)',
+    'radial-gradient(ellipse at 20% 52%, rgba(79,140,255,0.16) 0%, transparent 52%), radial-gradient(ellipse at 84% 36%, rgba(243,231,208,0.08) 0%, transparent 50%)',
+    'radial-gradient(ellipse at 60% 70%, rgba(243,231,208,0.16) 0%, transparent 54%), radial-gradient(ellipse at 32% 20%, rgba(79,140,255,0.14) 0%, transparent 48%)',
+    'radial-gradient(ellipse at 45% 40%, rgba(79,140,255,0.2) 0%, transparent 54%), radial-gradient(ellipse at 70% 72%, rgba(243,231,208,0.07) 0%, transparent 48%)',
   ];
   const dots = [
-    { x: '42%', y: '49%', r: 3, color: '#9fb8ff' },
-    { x: '37%', y: '54%', r: 3, color: '#d6b66a' },
-    { x: '65%', y: '31%', r: 3, color: '#5ee0a1' },
-    { x: '63%', y: '34%', r: 3, color: '#5ee0a1' },
-    { x: '43%', y: '47%', r: 3, color: '#9fb8ff' },
+    { x: '42%', y: '49%', r: 3, color: '#8DB7FF' },
+    { x: '37%', y: '54%', r: 3, color: '#DCC8A3' },
+    { x: '65%', y: '31%', r: 3, color: '#63CFA6' },
+    { x: '63%', y: '34%', r: 3, color: '#63CFA6' },
+    { x: '43%', y: '47%', r: 3, color: '#8DB7FF' },
     { x: '31%', y: '40%', r: 1, color: 'rgba(200,220,255,0.42)' },
     { x: '35%', y: '58%', r: 1.4, color: 'rgba(200,220,255,0.46)' },
     { x: '48%', y: '46%', r: 1.2, color: 'rgba(200,220,255,0.38)' },
@@ -46,7 +46,7 @@ function GradientFallback({
   ];
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: '#050609', pointerEvents: 'none' }}>
+    <div style={{ position: 'absolute', inset: 0, background: '#030814', pointerEvents: 'none' }}>
       <motion.div
         key={activeSection}
         initial={{ opacity: 0 }}
@@ -61,7 +61,7 @@ function GradientFallback({
       <div style={{
         position: 'absolute',
         inset: 0,
-        backgroundImage: 'linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(243,231,208,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(79,140,255,0.018) 1px, transparent 1px)',
         backgroundSize: '72px 72px',
       }} />
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.28 }}>
@@ -111,16 +111,16 @@ function LoadingPill() {
         gap: 10,
         padding: '9px 16px',
         borderRadius: 999,
-        background: 'rgba(7,10,15,0.54)',
-        border: '1px solid rgba(255,255,255,0.12)',
-        color: 'rgba(245,247,251,0.64)',
+        background: 'rgba(5,16,31,0.44)',
+        border: '1px solid rgba(243,231,208,0.14)',
+        color: 'rgba(243,231,208,0.72)',
         fontSize: 11,
         fontWeight: 700,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
-        boxShadow: '0 18px 60px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08)',
+        boxShadow: '0 18px 60px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 34px rgba(79,140,255,0.16)',
         pointerEvents: 'none',
       }}
     >
@@ -131,8 +131,8 @@ function LoadingPill() {
           width: 7,
           height: 7,
           borderRadius: '50%',
-          background: '#5ee0a1',
-          boxShadow: '0 0 16px rgba(94,224,161,0.72)',
+          background: '#8DB7FF',
+          boxShadow: '0 0 16px rgba(79,140,255,0.72)',
         }}
       />
       Loading market intelligence

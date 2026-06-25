@@ -42,7 +42,7 @@ const LANDMARKS: Array<{ name: LandmarkName; coords: [number, number] }> = [
   { name: 'Somerville Davis Square', coords: [-71.1223, 42.3967] },
 ];
 
-const SCORE_COLOR = (s: number) => s >= 90 ? '#5ee0a1' : s >= 85 ? '#9fb8ff' : '#d6b66a';
+const SCORE_COLOR = (s: number) => s >= 90 ? '#63CFA6' : s >= 85 ? '#8DB7FF' : '#DCC8A3';
 
 interface Props {
   properties: Property[];
@@ -115,7 +115,7 @@ const CinematicMapCanvas = forwardRef<CinematicMapCanvasHandle, Props>(
                     width: 58,
                     height: 68,
                     pointerEvents: 'none',
-                    filter: isActive ? 'drop-shadow(0 0 22px rgba(159,184,255,0.35))' : undefined,
+                    filter: isActive ? 'drop-shadow(0 0 22px rgba(79,140,255,0.35))' : undefined,
                   }}
                 >
                   <div style={{
@@ -127,12 +127,12 @@ const CinematicMapCanvas = forwardRef<CinematicMapCanvasHandle, Props>(
                     transform: 'translateX(-50%) perspective(56px) rotateX(14deg)',
                     borderRadius: '9px 9px 4px 4px',
                     background: isActive
-                      ? 'linear-gradient(180deg, rgba(245,247,251,0.72), rgba(159,184,255,0.34) 52%, rgba(94,224,161,0.12))'
-                      : 'linear-gradient(180deg, rgba(212,231,255,0.36), rgba(94,224,161,0.08))',
-                    border: `1px solid ${isActive ? 'rgba(245,247,251,0.48)' : 'rgba(212,231,255,0.22)'}`,
+                      ? 'linear-gradient(180deg, rgba(243,231,208,0.70), rgba(79,140,255,0.34) 52%, rgba(5,16,31,0.52))'
+                      : 'linear-gradient(180deg, rgba(141,183,255,0.30), rgba(5,16,31,0.48))',
+                    border: `1px solid ${isActive ? 'rgba(243,231,208,0.46)' : 'rgba(243,231,208,0.16)'}`,
                     boxShadow: isActive
-                      ? '0 0 28px rgba(159,184,255,0.36), inset 0 1px 0 rgba(255,255,255,0.42)'
-                      : '0 0 18px rgba(159,184,255,0.14), inset 0 1px 0 rgba(255,255,255,0.22)',
+                      ? '0 0 28px rgba(79,140,255,0.36), inset 0 1px 0 rgba(255,255,255,0.42)'
+                      : '0 0 18px rgba(79,140,255,0.14), inset 0 1px 0 rgba(255,255,255,0.22)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
                   }} />
@@ -145,8 +145,8 @@ const CinematicMapCanvas = forwardRef<CinematicMapCanvasHandle, Props>(
                     transform: 'translateX(-50%)',
                     borderRadius: '50%',
                     background: isActive
-                      ? 'radial-gradient(ellipse, rgba(159,184,255,0.35), transparent 72%)'
-                      : 'radial-gradient(ellipse, rgba(159,184,255,0.15), transparent 70%)',
+                      ? 'radial-gradient(ellipse, rgba(79,140,255,0.35), transparent 72%)'
+                      : 'radial-gradient(ellipse, rgba(79,140,255,0.15), transparent 70%)',
                   }} />
                   {isActive && (
                     <motion.div
@@ -159,9 +159,9 @@ const CinematicMapCanvas = forwardRef<CinematicMapCanvasHandle, Props>(
                         transform: 'translateX(-50%)',
                         padding: '4px 9px',
                         borderRadius: 999,
-                        background: 'rgba(5,6,9,0.64)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        color: 'rgba(245,247,251,0.82)',
+                        background: 'rgba(5,16,31,0.48)',
+                        border: '1px solid rgba(243,231,208,0.14)',
+                        color: 'rgba(243,231,208,0.86)',
                         fontSize: 9,
                         fontWeight: 800,
                         letterSpacing: '0.02em',
@@ -222,7 +222,7 @@ const CinematicMapCanvas = forwardRef<CinematicMapCanvasHandle, Props>(
           position: 'absolute',
           inset: 0,
           pointerEvents: 'none',
-          background: 'radial-gradient(circle at 62% 36%, rgba(94,224,161,0.08), transparent 32%), radial-gradient(circle at 28% 54%, rgba(159,184,255,0.11), transparent 38%), linear-gradient(180deg, rgba(5,6,9,0.12), rgba(5,6,9,0.28))',
+          background: 'radial-gradient(circle at 62% 36%, rgba(243,231,208,0.055), transparent 32%), radial-gradient(circle at 28% 54%, rgba(79,140,255,0.12), transparent 38%), linear-gradient(180deg, rgba(3,8,20,0.12), rgba(5,16,31,0.32))',
           mixBlendMode: 'screen',
         }} />
       </div>

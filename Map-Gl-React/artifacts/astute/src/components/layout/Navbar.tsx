@@ -24,15 +24,15 @@ export default function Navbar() {
           width: 36,
           height: 36,
           borderRadius: 13,
-          background: 'linear-gradient(135deg, rgba(159,184,255,0.95), rgba(94,224,161,0.62))',
+          background: 'linear-gradient(135deg, rgba(79,140,255,0.95), rgba(243,231,208,0.72))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 0 30px rgba(159,184,255,0.38), inset 0 1px 0 rgba(255,255,255,0.36)',
+          boxShadow: '0 0 30px rgba(79,140,255,0.38), inset 0 1px 0 rgba(255,255,255,0.36)',
         }}>
-          <BarChart2 size={18} color="#050609" strokeWidth={2.7} />
+          <BarChart2 size={18} color="#030814" strokeWidth={2.7} />
         </div>
-        <span style={{ color: '#f5f7fb', fontWeight: 900, fontSize: 17, letterSpacing: '-0.025em' }}>
+        <span style={{ color: '#F6F0E4', fontWeight: 900, fontSize: 17, letterSpacing: '-0.025em' }}>
           Astute
         </span>
       </Link>
@@ -54,9 +54,9 @@ export default function Navbar() {
                 fontWeight: 800,
                 textDecoration: 'none',
                 transition: '0.22s',
-                background: active ? 'rgba(255,255,255,0.13)' : 'transparent',
-                color: active ? '#f5f7fb' : 'rgba(245,247,251,0.52)',
-                boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.12)' : undefined,
+                background: active ? 'linear-gradient(135deg, rgba(79,140,255,0.18), rgba(243,231,208,0.10))' : 'transparent',
+                color: active ? '#F3E7D0' : 'rgba(246,240,228,0.52)',
+                boxShadow: active ? 'inset 0 1px 0 rgba(255,255,255,0.10)' : undefined,
               }}
             >
               <Icon size={14} />

@@ -12,7 +12,7 @@ interface Particle {
   pulseSpeed: number;
 }
 
-const COLORS = ['#9fb8ff', '#d6b66a', '#5ee0a1', '#a78bfa', '#7dd3fc'];
+const COLORS = ['#8DB7FF', '#4F8CFF', '#DCC8A3', '#F3E7D0'];
 
 export default function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

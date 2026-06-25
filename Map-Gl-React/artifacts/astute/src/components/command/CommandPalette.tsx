@@ -60,7 +60,7 @@ export default function CommandPalette() {
         label="Astute command palette"
       >
         <div className="astute-command-input-wrap">
-          <Search size={17} color="rgba(245,247,251,0.45)" />
+          <Search size={17} color="rgba(246,240,228,0.45)" />
           <Command.Input autoFocus placeholder="Search commands, markets, properties..." />
           <span>ESC</span>
         </div>
